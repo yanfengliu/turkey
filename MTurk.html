@@ -129,31 +129,34 @@
             mouseX = evt.clientX - parent.offsetLeft;
             mouseY = evt.clientY - parent.offsetTop;
             if (!dragged) {
-                switch (modeNum) {
-                    case 0: // dot mode
-                        perimeters.push([correctX, correctY]);
-                        ctx.fillRect(correctX - 1, correctY - 1, 2, 2);
-                        break;
-                    case 1: // link mode
-                        perimeter.push([correctX, correctY]);
-                        if (firstPoint) {
-                            firstPoint = false;
-                            ctx.fillRect(correctX - 1, correctY - 1, 2, 2);
-                        } else {
-                            perimeters.push(perimeter);
-                            ctx.beginPath();
-                            ctx.moveTo(perimeter[0][0], perimeter[0][1]);
-                            ctx.lineTo(perimeter[1][0], perimeter[1][1]);
-                            ctx.closePath();
-                            ctx.stroke();
-                            ctx.fillRect(correctX - 1, correctY - 1, 2, 2);
-                            perimeter = new Array();
-                            firstPoint = true;
-                        }
-                        break;
-                    case 2: // polygon mode
-                        perimeter.push([correctX, correctY]);
-                        ctx.fillRect(correctX - 1, correctY - 1, 2, 2);
+                if (singleMode) {
+                    perimeters.push([correctX, correctY]);
+                    ctx.fillStyle = "red";
+                    ctx.fillRect(correctX - 1, correctY - 1, 1, 1);
+                } else {
+                    perimeter.push([correctX, correctY]);
+                    if (firstPoint) {
+                        firstPoint = false;
+                        ctx.fillStyle = "yellow";
+                        ctx.fillRect(correctX, correctY, 1, 1);
+                    } else {
+                        perimeters.push(perimeter);
+                        ctx.beginPath();
+                        ctx.moveTo(perimeter[0][0], perimeter[0][1]);
+                        ctx.lineTo(perimeter[1][0], perimeter[1][1]);
+                        ctx.closePath();
+                        ctx.stroke();
+                        ctx.fillStyle = "blue";
+                        ctx.fillRect(correctX - 1, correctY - 1, 1, 1);
+                        perimeter = new Array();
+                        firstPoint = true;
+                    }
+                }
+                // print coordinates
+                if (perimeters.length == 0) {
+                    document.getElementById('coordinates').value = '';
+                } else {
+                    document.getElementById('coordinates').value = JSON.stringify(perimeters);
                 }
             }
             dragStart = false;
