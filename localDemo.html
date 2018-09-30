@@ -173,30 +173,6 @@
                 dragStart = false;
             }, false);
 
-            window.addEventListener("keydown", function (evt) {
-                // Press C for "Close Polygon"
-                if (evt.key == 'c') {
-                    console.log("C");
-                    if (perimeter.length != 0) {
-                        perimeters.push(perimeter);
-                        perimeter = new Array();
-                    }
-                    // draw closed polygons
-                    ctx.fillStyle = "red";
-                    for (var i = 0; i < perimeters.length; i++) {
-                        var ps = perimeters[i];
-                        ctx.beginPath();
-                        ctx.moveTo(ps[0][0], ps[0][1]);
-                        for (var j = 1; j < ps.length; j++) {
-                            console.log("P");
-                            ctx.lineTo(ps[j][0], ps[j][1]);
-                            ctx.stroke();
-                        }
-                        ctx.closePath();
-                        ctx.fill();
-                    }
-                }
-            }, false);
 
             canvas.addEventListener('mousemove', function (evt) {
                 if (dragStart) {
@@ -302,6 +278,29 @@
                 // Press ctrl + Z for "Undo"
                 if ((evt.key == 'z') && (evt.ctrlKey)) {
                     undo();
+                }
+
+                // Press C for "Close Polygon"
+                if (evt.key == 'c') {
+                    console.log("C");
+                    if (perimeter.length != 0) {
+                        perimeters.push(perimeter);
+                        perimeter = new Array();
+                    }
+                    // draw closed polygons
+                    ctx.fillStyle = "red";
+                    for (var i = 0; i < perimeters.length; i++) {
+                        var ps = perimeters[i];
+                        ctx.beginPath();
+                        ctx.moveTo(ps[0][0], ps[0][1]);
+                        for (var j = 1; j < ps.length; j++) {
+                            console.log("P");
+                            ctx.lineTo(ps[j][0], ps[j][1]);
+                            ctx.stroke();
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                    }
                 }
             }, true);
         }
