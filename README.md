@@ -10,4 +10,4 @@ Authors:
 
 You can also test the code before deploying it on MTurk by opening `localDemo.html` in your browser. The interface will show the following user guidance and then the image below it. 
 
-![Guidance](https://imgur.com/1cNElAG.png)
+![Guidance](https://imgur.com/6WoMeak.png)
