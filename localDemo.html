@@ -8,15 +8,18 @@
 
 <body>
     <div style="display:inline-block;vertical-align:top;">
-        <h1>turkey local demo</h1>
-        <div id="container"></div>
+        <div id="container">
+            If you don't see anything here, make sure to start chrome with the <pre>--allow-file-access-from-files</pre> flag. This will allow this wrapper page to load MTurk.html.
+
+        </div>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script>
-        $("#container").load("https://raw.githubusercontent.com/yanfengliu/turkey/master/MTurk.html", function() {
-            $("#pic")[0].src = "https://cdn.static-economist.com/sites/default/files/images/print-edition/20180203_BRP004_0.jpg"
+        $("#container").load("MTurk.html", function() {
+            document.getElementById("pic").src = "https://cdn.static-economist.com/sites/default/files/images/print-edition/20180203_BRP004_0.jpg";
+            document.getElementById("title").innerText="Turkey Local Demo";
+            start();
         })
     </script>
 </body>
-
 </html>

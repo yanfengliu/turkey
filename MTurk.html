@@ -18,7 +18,7 @@
         }
     </style>
     <div style="display:inline-block;vertical-align:top;">
-        <h1>Insert Desired Title Here</h1>
+        <h1 id="title">Insert Desired Title Here</h1>
 
         <ul>
             <li>Press <b>Left Click</b> to draw a point</li>
@@ -48,13 +48,15 @@
         <div id="child">
             <canvas id="myCanvas" style="border:1px solid red;">
             </canvas>
-            <img id='pic' src="${img_url}" />
+            <img id="pic" src="${img_url}" />
         </div>
     </div>
 
   
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script type="text/javascript">
+        console.log("Loading Turkey segment tool");
+
         var translateX, translateY, delta, scaleRatio, scaleDiff;
         var anchorX, anchorY, dragged, dragStart, dragX, dragY;
         var perimeter = new Array();
@@ -164,7 +166,8 @@
             correctX = Math.round(correctX);
             correctY = Math.round(correctY);
         }
-        window.onload = function () {
+
+        var start = function() {
             parent = document.getElementById("parent");
             child = document.getElementById("child");
             canvas = document.getElementById("myCanvas");
@@ -242,11 +245,7 @@
                     undo();
                 }
             }, true);
-        }
-    </script>
 
-    <script type="text/javascript">
-        $(document).ready(function () {
             //initialize buttons
             $("#reset_button").click(function (e) {
                 reset();
@@ -259,5 +258,9 @@
             });
             $("#submitButton").attr("disabled", false);
             $("#submitButton").detach().appendTo("#buttons");
-        });
+        }
+
+        window.onload = function () {
+            start();
+        }
     </script>
