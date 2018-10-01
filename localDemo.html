@@ -10,16 +10,36 @@
     <div style="display:inline-block;vertical-align:top;">
         <div id="container">
             If you don't see anything here, make sure to start chrome with the <pre>--allow-file-access-from-files</pre> flag. This will allow this wrapper page to load MTurk.html.
-
         </div>
+        
+        <input class="btn btn-success" id="submitButton" value="Submit"/>
+        <h2 style="visibility: hidden" id="outputLabel">Output</h2>
+        <div style="font-family:monospace" id="output"></div>
+        
     </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script>
-        $("#container").load("MTurk.html", function() {
+        var req = new XMLHttpRequest();
+        req.onload = function(e) 
+        {
+            document.getElementById("container").innerHTML = e.target.response;
             document.getElementById("pic").src = "https://cdn.static-economist.com/sites/default/files/images/print-edition/20180203_BRP004_0.jpg";
             document.getElementById("title").innerText="Turkey Local Demo";
+            eval(document.getElementById("turkey").innerHTML);
             start();
-        })
+            document.getElementById("submitButton").addEventListener("click", function(e) {
+                document.getElementById("outputLabel").style.visibility = "visible";
+                document.getElementById("output").innerHTML = JSON.stringify(perimeters); 
+            });
+
+            document.getElementById("reset_button").addEventListener("click", function(e) {
+                document.getElementById("outputLabel").style.visibility = "hidden";
+                document.getElementById("output").innerHTML = ""; 
+            });
+        }
+
+        req.open("GET", "MTurk.html");
+        req.send();
+        
     </script>
 </body>
 </html>
