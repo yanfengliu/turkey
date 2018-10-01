@@ -1,6 +1,62 @@
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+    crossorigin="anonymous">
+<style>
+    #parent {
+            width: 1000px; 
+            overflow: hidden;
+            position: relative;
+            background: blue;
+        }
 
-<script>
+        #myCanvas {
+            position: absolute;
+        }
+
+        #pic{
+            width: 100%;
+            height: auto;
+        }
+    </style>
+<div style="display:inline-block;vertical-align:top;">
+    <h1 id="title">Insert Desired Title Here</h1>
+
+    <ul>
+        <li>Press <b>Left Click</b> to draw a point</li>
+        <li>Press <b>Mode Button</b> to toggle mode</li>
+        <li>Press <strong>CTRL+Z</strong> to undo.</li>
+        <li>Press <strong>C</strong> to close polygon in polygon mode.</li>
+        <li>Press <strong>Reset</strong> to clear everything.</li>
+        <li>Dot mode indicates the location of the object with one click. </li>
+        <li>Link mode indicates head (1st click) and tail (2nd click).</li>
+        <li>Polygon mode draws the segmentation mask of the object.</li>
+    </ul>
+
+    <p id="buttons">
+        <input class="btn btn-secondary" id="undo_button" type="button" value="Undo" />
+        <input class="btn btn-danger" id="reset_button" type="Reset" value="Reset" />
+        <input class="btn btn-info" id="mode_button" type="button" value="Dot Mode" />
+    </p>
+
+    <p>
+        <!-- Coordinates input from user -->
+        <!-- <strong>Coordinates:</strong> <textarea disabled="disabled" id="coordinates" name="coordinates" style="width:300px; height:200px;"></textarea> -->
+        <input id="coordinates" name="coordinates" type="hidden" />
+    </p>
+</div>
+
+<div id="parent">
+    <div id="child">
+        <canvas id="myCanvas" style="border:1px solid red;">
+        </canvas>
+        <img id="pic" src="${img_url}" />
+    </div>
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript">
+    console.log("Loading Turkey segment tool");
+
     var translateX, translateY, delta, scaleRatio, scaleDiff;
     var anchorX, anchorY, dragged, dragStart, dragX, dragY;
     var perimeter = new Array();
@@ -12,13 +68,10 @@
     var mouseX, mouseY;
     var oldScale = 1.0;
     var newScale = 1.0;
-    var child, parent, canvas, ctx, img;
+    var canvas = 0;
+    var child, parent, canvas, ctx, img = 0;
     var firstPoint = true;
     var modeNum = 0;
-
-    var zoom = function (scaleFactor) {
-        console.log(scaleFactor);
-    }
 
     var handleScroll = function (evt) {
         delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
@@ -50,17 +103,19 @@
         correctY = Math.round(correctY);
     }
 
-    window.onload = function () {
+    var start = function () {
         parent = document.getElementById("parent");
         child = document.getElementById("child");
         canvas = document.getElementById("myCanvas");
         ctx = canvas.getContext("2d");
         img = document.getElementById("pic");
         modeButton = document.getElementById("mode_button");
-        canvas.width = img.width;
-        canvas.height = img.height;
         // parent.style.width = img.width + 'px';
         // parent.style.height = img.height + 'px';
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
         ctx.fillStyle = "red";
         ctx.strokeStyle = "red";
 
@@ -74,6 +129,8 @@
         $("#mode_button").click(function (e) {
             toggleMode();
         });
+        $("#submitButton").attr("disabled", false);
+        $("#submitButton").detach().appendTo("#buttons");
 
 
         child.addEventListener('DOMMouseScroll', handleScroll, false);
@@ -122,7 +179,6 @@
                 child.style.transform += 'translate(' + dragX / newScale + 'px, ' + dragY / newScale + 'px)';
                 dragOffsetX += dragX;
                 dragOffsetY += dragY;
-                console.log(dragOffsetX, dragOffsetY);
                 anchorX = evt.clientX;
                 anchorY = evt.clientY;
             }
@@ -178,9 +234,9 @@
                         ctx.fillRect(ps[0][0] - 1, ps[0][1] - 1, 2, 2);
                         ctx.fillRect(ps[1][0] - 1, ps[1][1] - 1, 2, 2);
 
-                        // If there is only beginPath() without closePath(), then when 
+                        // If there is only beginPath() without closePath(), then when
                         // the canvas is cleared, those erased paths will reappear
-                        // whenever fill() or stroke() is called again! 
+                        // whenever fill() or stroke() is called again!
                         ctx.beginPath();
                         ctx.moveTo(ps[0][0], ps[0][1]);
                         ctx.lineTo(ps[1][0], ps[1][1]);
@@ -199,7 +255,6 @@
                         ctx.beginPath();
                         ctx.moveTo(ps[0][0], ps[0][1]);
                         for (var j = 1; j < ps.length; j++) {
-                            console.log("P");
                             ctx.lineTo(ps[j][0], ps[j][1]);
                             ctx.stroke();
                         }
@@ -222,7 +277,6 @@
 
             // Press C for "Close Polygon"
             if (evt.key == 'c') {
-                console.log("C");
                 if (perimeter.length != 0) {
                     perimeters.push(perimeter);
                     perimeter = new Array();
@@ -234,7 +288,6 @@
                     ctx.beginPath();
                     ctx.moveTo(ps[0][0], ps[0][1]);
                     for (var j = 1; j < ps.length; j++) {
-                        console.log("P");
                         ctx.lineTo(ps[j][0], ps[j][1]);
                         ctx.stroke();
                     }
@@ -244,85 +297,9 @@
             }
         }, true);
     }
+
+    window.onload = function() {
+        start();
+    }
+
 </script>
-
-<!-- Beginning of the html document-->
-<html>
-
-<head>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
-        crossorigin="anonymous">
-    <style>
-        #parent {
-            width: 1000px; 
-            overflow: hidden;
-            position: relative;
-            background: blue;
-        }
-
-        #myCanvas {
-            position: absolute;
-        }
-
-        #pic{
-            width: 100%;
-            height: auto;
-        }
-    </style>
-</head>
-
-<body>
-    <div style="display:inline-block;vertical-align:top;">
-        <h1>Insert Desired Title Here</h1>
-
-        <ul>
-            <li>Press <b>Left Click</b> to draw a point</li>
-            <li>Press <b>Mode Button</b> to toggle mode</li>
-            <li>Press <strong>CTRL+Z</strong> to undo.</li>
-            <li>Press <strong>C</strong> to close polygon in polygon mode.</li>
-            <li>Press <strong>Reset</strong> to clear everything.</li>
-            <li>Dot mode indicates the location of the object with one click. </li>
-            <li>Link mode indicates head (1st click) and tail (2nd click).</li>
-            <li>Polygon mode draws the segmentation mask of the object.</li>
-        </ul>
-
-        <p id="buttons">
-            <input class="btn btn-secondary" id="undo_button" type="button" value="Undo" />
-            <input class="btn btn-danger" id="reset_button" type="Reset" value="Reset" />
-            <input class="btn btn-info" id="mode_button" type="button" value="Dot Mode" />
-        </p>
-
-        <p>
-            <!-- Coordinates input from user -->
-            <!-- <strong>Coordinates:</strong> <textarea disabled="disabled" id="coordinates" name="coordinates" style="width:300px; height:200px;"></textarea> -->
-            <input id="coordinates" name="coordinates" type="hidden" />
-        </p>
-    </div>
-
-    <div id="parent">
-        <div id="child">
-            <canvas id="myCanvas" style="border:1px solid red;">
-            </canvas>
-            <img id='pic' src="${img_url}" />
-        </div>
-    </div>
-
-    <script type="text/javascript">
-        $(document).ready(function () {
-            //initialize buttons
-            $("#reset_button").click(function (e) {
-                reset();
-            });
-            $("#undo_button").click(function (e) {
-                undo();
-            });
-            $("#mode_button").click(function (e) {
-                toggleMode();
-            });
-            $("#submitButton").attr("disabled", false);
-            $("#submitButton").detach().appendTo("#buttons");
-        });
-    </script>
-</body>
-
-</html>
