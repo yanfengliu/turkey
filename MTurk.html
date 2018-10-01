@@ -68,7 +68,8 @@
     var mouseX, mouseY;
     var oldScale = 1.0;
     var newScale = 1.0;
-    var child, parent, canvas, ctx, img;
+    var canvas = 0;
+    var child, parent, canvas, ctx, img = 0;
     var firstPoint = true;
     var modeNum = 0;
 
@@ -102,17 +103,19 @@
         correctY = Math.round(correctY);
     }
 
-    window.onload = function () {
+    var start = function () {
         parent = document.getElementById("parent");
         child = document.getElementById("child");
         canvas = document.getElementById("myCanvas");
         ctx = canvas.getContext("2d");
         img = document.getElementById("pic");
         modeButton = document.getElementById("mode_button");
-        canvas.width = img.width;
-        canvas.height = img.height;
         // parent.style.width = img.width + 'px';
         // parent.style.height = img.height + 'px';
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
         ctx.fillStyle = "red";
         ctx.strokeStyle = "red";
 
@@ -176,7 +179,6 @@
                 child.style.transform += 'translate(' + dragX / newScale + 'px, ' + dragY / newScale + 'px)';
                 dragOffsetX += dragX;
                 dragOffsetY += dragY;
-                console.log(dragOffsetX, dragOffsetY);
                 anchorX = evt.clientX;
                 anchorY = evt.clientY;
             }
@@ -253,7 +255,6 @@
                         ctx.beginPath();
                         ctx.moveTo(ps[0][0], ps[0][1]);
                         for (var j = 1; j < ps.length; j++) {
-                            console.log("P");
                             ctx.lineTo(ps[j][0], ps[j][1]);
                             ctx.stroke();
                         }
@@ -276,7 +277,6 @@
 
             // Press C for "Close Polygon"
             if (evt.key == 'c') {
-                console.log("C");
                 if (perimeter.length != 0) {
                     perimeters.push(perimeter);
                     perimeter = new Array();
@@ -288,7 +288,6 @@
                     ctx.beginPath();
                     ctx.moveTo(ps[0][0], ps[0][1]);
                     for (var j = 1; j < ps.length; j++) {
-                        console.log("P");
                         ctx.lineTo(ps[j][0], ps[j][1]);
                         ctx.stroke();
                     }
@@ -299,7 +298,8 @@
         }, true);
     }
 
-    window.onload = function () {
+    window.onload = function() {
         start();
     }
+
 </script>
