@@ -1,0 +1,214 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script><script type="text/javascript">
+    var translateX, translateY, delta, scaleRatio, scaleDiff;
+    var anchorX, anchorY, dragged, dragStart, dragX, dragY;
+    var perimeter = new Array();
+    var perimeters = new Array();
+    var dragOffsetX = 0;
+    var dragOffsetY = 0;
+    var scalingOffsetX = 0;
+    var scalingOffsetY = 0;
+    var mouseX, mouseY;
+    var oldScale = 1.0;
+    var newScale = 1.0;
+    var child, parent, canvas, ctx, img;
+    var firstPoint = true;
+    var singleMode = true;
+    function toggleMode() {
+        singleMode = !singleMode;
+        if (singleMode) {
+            modeButton.value = "Dot Mode";
+        } else {
+            modeButton.value = "Link Mode";
+        }
+    }
+    function reset() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        perimeters = new Array();
+        perimeter = new Array();
+    }
+    function undo() {
+        if (perimeter.length == 0) {
+            perimeters.pop()
+        } else {
+            perimeter.pop();
+        }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (!singleMode) {
+            for (var i = 0; i < perimeters.length; i++) {
+                var ps = perimeters[i];
+                ctx.fillStyle = "yellow";
+                ctx.fillRect(ps[0][0] - 1, ps[0][1] - 1, 1, 1);
+                ctx.fillStyle = "blue";
+                ctx.fillRect(ps[1][0] - 1, ps[1][1] - 1, 1, 1);
+                // If there is only beginPath() without closePath(), then when 
+                // the canvas is cleared, those erased paths will reappear
+                // whenever fill() or stroke() is called again! 
+                ctx.beginPath();
+                ctx.moveTo(ps[0][0], ps[0][1]);
+                ctx.lineTo(ps[1][0], ps[1][1]);
+                ctx.closePath();
+                ctx.stroke();
+            }
+            ctx.fillStyle = "yellow";
+            ctx.fillRect(perimeter[0] - 1, perimeter[1] - 1, 1, 1);
+        } else {
+            ctx.fillStyle = "red";
+            for (var i = 0; i < perimeters.length; i++) {
+                var ps = perimeters[i];
+                ctx.fillRect(ps[0] - 1, ps[1] - 1, 1, 1);
+            }
+        }
+    }
+    var handleScroll = function (evt) {
+        delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
+        newScale += delta / 10;
+        newScale = Math.max(newScale, 1.0);
+        newScale = Math.min(newScale, 5.0);
+        scaleRatio = newScale / oldScale;
+        scaleDiff = newScale - oldScale;
+        oldScale = newScale;
+        scalingOffsetX = (newScale - 1) * 0.5 * parent.offsetWidth;
+        scalingOffsetY = (newScale - 1) * 0.5 * parent.offsetHeight;
+        child.style.transform += 'scale(' + scaleRatio + ', ' + scaleRatio + ')';
+        getCorrectCoords(evt);
+        return evt.preventDefault() && false;
+    };
+    function getCorrectCoords(evt) {
+        mouseX = evt.clientX - parent.offsetLeft;
+        mouseY = evt.clientY - parent.offsetTop;
+        correctX = (mouseX + scalingOffsetX - dragOffsetX) / newScale;
+        correctY = (mouseY + scalingOffsetY - dragOffsetY) / newScale;
+        correctX = Math.round(correctX);
+        correctY = Math.round(correctY);
+    }
+    window.onload = function () {
+        parent = document.getElementById("parent");
+        child = document.getElementById("child");
+        canvas = document.getElementById("myCanvas");
+        ctx = canvas.getContext("2d");
+        img = document.getElementById("pic");
+        modeButton = document.getElementById("mode_button");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.fillStyle = "red";
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 1;
+        child.addEventListener('DOMMouseScroll', handleScroll, false);
+        child.addEventListener('mousewheel', handleScroll, false);
+
+        canvas.addEventListener('mouseup', function (evt) {
+            mouseX = evt.clientX - parent.offsetLeft;
+            mouseY = evt.clientY - parent.offsetTop;
+            if (!dragged) {
+                if (singleMode) {
+                    perimeters.push([correctX, correctY]);
+                    ctx.fillStyle = "red";
+                    ctx.fillRect(correctX - 1, correctY - 1, 1, 1);
+                } else {
+                    perimeter.push([correctX, correctY]);
+                    if (firstPoint) {
+                        firstPoint = false;
+                        ctx.fillStyle = "yellow";
+                        ctx.fillRect(correctX - 1, correctY - 1, 1, 1);
+                    } else {
+                        perimeters.push(perimeter);
+                        ctx.beginPath();
+                        ctx.moveTo(perimeter[0][0], perimeter[0][1]);
+                        ctx.lineTo(perimeter[1][0], perimeter[1][1]);
+                        ctx.closePath();
+                        ctx.stroke();
+                        ctx.fillStyle = "blue";
+                        ctx.fillRect(correctX - 1, correctY - 1, 1, 1);
+                        perimeter = new Array();
+                        firstPoint = true;
+                    }
+                }
+                // print coordinates
+                if (perimeters.length == 0) {
+                    document.getElementById('coordinates').value = '';
+                } else {
+                    document.getElementById('coordinates').value = JSON.stringify(perimeters);
+                }
+            }
+            dragStart = false;
+        }, false);
+        canvas.addEventListener('mousemove', function (evt) {
+            if (dragStart) {
+                dragged = true;
+                dragX = evt.clientX - anchorX;
+                dragY = evt.clientY - anchorY;
+                child.style.transform += 'translate(' + dragX / newScale + 'px, ' + dragY / newScale + 'px)';
+                dragOffsetX += dragX;
+                dragOffsetY += dragY;
+                anchorX = evt.clientX;
+                anchorY = evt.clientY;
+            }
+            getCorrectCoords(evt);
+        }, false);
+        canvas.addEventListener('mousedown', function (evt) {
+            anchorX = evt.clientX;
+            anchorY = evt.clientY;
+            dragged = false;
+            dragStart = true;
+        }, false);
+        window.addEventListener("keydown", function (evt) {
+            if (evt.key == 'e') {
+                toggleMode();
+            }
+            if ((evt.key == 'z') && (evt.ctrlKey)) {
+                undo();
+            }
+        }, true);
+    }
+</script><!-- Beginning of the html document-->
+<link crossorigin="anonymous" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" rel="stylesheet" />
+<style type="text/css">#parent {
+            width: 1000px; 
+            overflow: hidden;
+            position: relative;
+            background: blue;
+        }
+
+        #myCanvas {
+            position: absolute;
+        }
+
+        #pic{
+            width: 100%;
+            height: auto;
+        }
+</style>
+<div style="display:inline-block;vertical-align:top;">
+<h1>Fly Annotation</h1>
+
+<ul>
+	<li>Press <b>Left Click</b> to draw a point</li>
+	<li>Press <strong>CTRL+Z</strong> to <strong>undo</strong>.</li>
+	<li>Press <strong>Reset</strong> to clear everything.</li>
+	<li>Dot mode indicates the location of the object with one click; link mode indicates head (1st click) and tail (2nd click).</li>
+</ul>
+
+<p id="buttons"><input class="btn btn-secondary" id="undo_button" type="button" value="Undo" /> <input class="btn btn-danger" id="reset_button" type="Reset" value="Reset" /> <input class="btn btn-info" id="mode_button" type="button" value="Dot Mode" /></p>
+
+<p><!-- Coordinates input from user --><!-- <strong>Coordinates:</strong> <textarea disabled="disabled" id="coordinates" name="coordinates" style="width:300px; height:200px;"></textarea> --><input id="coordinates" name="coordinates" type="hidden" /></p>
+</div>
+
+<div id="parent">
+<div id="child"><canvas id="myCanvas" style="border:1px solid red;"> </canvas> <img id="pic" src="${img_url}" /></div>
+</div>
+<script type="text/javascript">
+        $(document).ready(function () {
+            //initialize buttons
+            $("#reset_button").click(function (e) {
+                reset();
+            });
+            $("#undo_button").click(function (e) {
+                undo();
+            });
+            $("#mode_button").click(function (e) {
+                toggleMode();
+            });
+            $("#submitButton").attr("disabled", false);
+            $("#submitButton").detach().appendTo("#buttons");
+        });
+    </script>
