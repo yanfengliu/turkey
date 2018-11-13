@@ -31,7 +31,7 @@
             width: 1000px; 
             overflow: hidden;
             position: relative;
-            background: blue;
+            background:#f5f5f5;
         }
 
         #myCanvas {
@@ -47,8 +47,8 @@
     <h1 id="title">Insert Desired Title Here</h1>
 
     <ul>
-        <li>Press <b>Left Click</b> to draw a point</li>
-        <li>Press <b>Mode Button</b> to toggle mode</li>
+        <li>Click to draw points, polygon vertices, and links</li>
+        <li>The blue toggle button indicates the current mode</li>
         <li>Press <strong>CTRL+Z</strong> to undo.</li>
         <li>Press <strong>C</strong> to close polygon in polygon mode.</li>
         <li>Press <strong>Reset</strong> to clear everything.</li>
@@ -72,7 +72,7 @@
 
 <div id="parent">
     <div id="child">
-        <canvas id="myCanvas" style="border:1px solid red;">
+        <canvas id="myCanvas">
         </canvas>
         <img id="pic" src="${img_url}" />
     </div>
@@ -96,7 +96,11 @@
     var canvas = 0;
     var child, parent, canvas, ctx, img = 0;
     var firstPoint = true;
+    var mode = "";
+    var modes;
     var modeNum = 0;
+
+    var dotSize = 5;
 
     var handleScroll = function (evt) {
         delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
@@ -139,11 +143,20 @@
         // parent.style.width = img.width + 'px';
         // parent.style.height = img.height + 'px';
 
+        var mode_data = "${annotation_mode}";
+        if(mode_data == "${annotation_mode}") // running in local demo mode
+        {
+            mode_data = "dot-link-polygon";
+        }
+        modes = mode_data.split('-');
+        mode = modes[0];
+
+        modeButton.value = capitalize(mode);
+
         canvas.width = img.width;
         canvas.height = img.height;
 
-        ctx.fillStyle = "red";
-        ctx.strokeStyle = "red";
+        ctx.strokeStyle = "rgba(255, 79, 0, 1.0)";
 
         //initialize buttons
         document.getElementById("reset_button").addEventListener("click", function (e) {
@@ -165,16 +178,16 @@
             mouseX = evt.clientX - parent.offsetLeft;
             mouseY = evt.clientY - parent.offsetTop;
             if (!dragged) {
-                switch (modeNum) {
-                    case 0: // dot mode
+                switch (mode) {
+                    case "dot": // dot mode
+                        ctx.fillStyle = "rgba(255, 79, 0, 1.0)";
                         perimeters.push([correctX, correctY]);
-                        ctx.fillRect(correctX - 1, correctY - 1, 2, 2);
                         break;
-                    case 1: // link mode
+                    case "link": // link mode
+                        ctx.fillStyle = "rgba(255, 79, 0, 1.0)";
                         perimeter.push([correctX, correctY]);
                         if (firstPoint) {
                             firstPoint = false;
-                            ctx.fillRect(correctX - 1, correctY - 1, 2, 2);
                         } else {
                             perimeters.push(perimeter);
                             ctx.beginPath();
@@ -182,15 +195,15 @@
                             ctx.lineTo(perimeter[1][0], perimeter[1][1]);
                             ctx.closePath();
                             ctx.stroke();
-                            ctx.fillRect(correctX - 1, correctY - 1, 2, 2);
                             perimeter = new Array();
                             firstPoint = true;
                         }
                         break;
-                    case 2: // polygon mode
+                    case "polygon": // polygon mode
+                        ctx.fillStyle = "rgba(255, 79, 0, 0.5)";
                         perimeter.push([correctX, correctY]);
-                        ctx.fillRect(correctX - 1, correctY - 1, 2, 2);
                 }
+                ctx.fillRect(correctX - dotSize/2, correctY - dotSize/2, dotSize, dotSize);
             }
             dragStart = false;
         }, false);
@@ -219,19 +232,12 @@
 
         function toggleMode() {
             modeNum += 1;
-            if (modeNum > 2) {
+            if (modeNum >= modes.length) {
                 modeNum = 0;
             }
-            switch (modeNum) {
-                case 0:
-                    modeButton.value = "Dot Mode";
-                    break;
-                case 1:
-                    modeButton.value = "Link Mode";
-                    break;
-                case 2:
-                    modeButton.value = "Polygon Mode";
-            }
+
+            mode = modes[modeNum];
+            modeButton.value = capitalize(mode);
         }
         function reset() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -246,14 +252,14 @@
                 perimeter.pop();
             }
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            switch (modeNum) {
-                case 0: // dot mode
+            switch (mode) {
+                case "dot": // dot mode
                     for (var i = 0; i < perimeters.length; i++) {
                         var ps = perimeters[i];
                         ctx.fillRect(ps[0] - 1, ps[1] - 1, 2, 2);
                     }
                     break;
-                case 1: // link mode
+                case "link": // link mode
                     for (var i = 0; i < perimeters.length; i++) {
                         var ps = perimeters[i];
                         ctx.fillRect(ps[0][0] - 1, ps[0][1] - 1, 2, 2);
@@ -270,11 +276,10 @@
                     }
                     ctx.fillRect(perimeter[0] - 1, perimeter[1] - 1, 2, 2);
                     break;
-                case 2: // polygon mode
+                case "polygon": // polygon mode
                     for (var i = 0; i < perimeter.length; i++) {
                         ctx.fillRect(perimeter[i][0] - 1, perimeter[i][1] - 1, 2, 2);
                     }
-                    ctx.fillStyle = "red";
                     for (var i = 0; i < perimeters.length; i++) {
                         var ps = perimeters[i];
                         ctx.beginPath();
@@ -307,7 +312,6 @@
                     perimeter = new Array();
                 }
                 // draw closed polygons
-                ctx.fillStyle = "red";
                 for (var i = 0; i < perimeters.length; i++) {
                     var ps = perimeters[i];
                     ctx.beginPath();
@@ -326,5 +330,10 @@
     window.onload = function () {
         start();
     }
+
+function capitalize(string) 
+{
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 </script>

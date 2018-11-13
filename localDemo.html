@@ -1,3 +1,29 @@
+<!-- 
+    turkey: an Amazon Mechanical Turk turn-key segment tool.
+
+    MIT License
+
+    Copyright (c) 2018 Yanfeng Liu, Jay Carlson, Eric Psota, Lance C. Pérez
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THEv
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+ -->
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -6,10 +32,10 @@
     <title>Turkey Local Demo</title>
 </head>
 
-<body>
+<body style="margin:10px">
     <div style="display:inline-block;vertical-align:top;">
         <div id="container">
-            If you don't see anything here, make sure to start chrome with the <pre>--allow-file-access-from-files</pre> flag. This will allow this wrapper page to load MTurk.html.
+            If you don't see anything here, make sure to start Chrome with the <pre>--allow-file-access-from-files</pre> flag (or the equivalent configuration for the browser of your choice). This will allow this wrapper page to load MTurk.html.
         </div>
         
         <input class="btn btn-success" id="submitButton" value="Submit"/>
@@ -22,7 +48,7 @@
         req.onload = function(e) 
         {
             document.getElementById("container").innerHTML = e.target.response;
-            document.getElementById("pic").src = "https://cdn.static-economist.com/sites/default/files/images/print-edition/20180203_BRP004_0.jpg";
+            document.getElementById("pic").src = "https://i.imgur.com/uvwl4Gb.jpg";
             document.getElementById("title").innerText="Turkey Local Demo";
             eval(document.getElementById("turkey").innerHTML);
             document.getElementById("pic").onload = function() {start(); }
@@ -37,7 +63,15 @@
             });
         }
 
-        req.open("GET", "MTurk.html");
+        // load the current version directly from GitHub
+        // req.open("GET", "https://raw.githubusercontent.com/yanfengliu/turkey/master/MTurk.html");
+        
+        /* Use the following request instead if you want to load the local version. 
+         * Note that you will need to disable cross-site scripting protection 
+         * to load local HTML files through JSON requests */
+        
+         req.open("GET", "MTurk.html"); 
+        
         req.send();
         
     </script>
