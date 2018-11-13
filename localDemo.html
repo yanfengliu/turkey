@@ -25,7 +25,7 @@
             document.getElementById("pic").src = "https://cdn.static-economist.com/sites/default/files/images/print-edition/20180203_BRP004_0.jpg";
             document.getElementById("title").innerText="Turkey Local Demo";
             eval(document.getElementById("turkey").innerHTML);
-            start();
+            document.getElementById("pic").onload = function() {start(); }
             document.getElementById("submitButton").addEventListener("click", function(e) {
                 document.getElementById("outputLabel").style.visibility = "visible";
                 document.getElementById("output").innerHTML = JSON.stringify(perimeters); 
