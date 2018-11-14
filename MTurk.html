@@ -240,6 +240,11 @@
         function reset() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             child.style.transform = "";
+            newScale = 1.0;
+            dragOffsetX = 0;
+            dragOffsetY = 0;
+            scalingOffsetX = 0;
+            scalingOffsetY = 0;
             firstPoint = true;
             perimeters = new Array();
             perimeter = new Array();
