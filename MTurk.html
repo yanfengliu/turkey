@@ -65,7 +65,6 @@
 
     <p>
         <!-- Coordinates input from user -->
-        <!-- <strong>Coordinates:</strong> <textarea disabled="disabled" id="coordinates" name="coordinates" style="width:300px; height:200px;"></textarea> -->
         <input id="coordinates" name="coordinates" type="hidden" />
     </p>
 </div>
@@ -80,8 +79,6 @@
 
 
 <script id="turkey" type="text/javascript">
-    console.log("Loading Turkey segment tool");
-
     var translateX, translateY, delta, scaleRatio, scaleDiff;
     var anchorX, anchorY, dragged, dragStart, dragX, dragY;
     var perimeter = new Array();
@@ -90,6 +87,7 @@
     var dragOffsetY = 0;
     var scalingOffsetX = 0;
     var scalingOffsetY = 0;
+    var correctX, correctY;
     var mouseX, mouseY;
     var oldScale = 1.0;
     var newScale = 1.0;
@@ -123,12 +121,12 @@
     };
 
     function getCorrectCoords(evt) {
-        console.log(window.scrollTop);
         mouseX = evt.clientX - parent.offsetLeft;
-        mouseY = evt.clientY - parent.offsetTop + parent.scrollTop;
+        mouseY = evt.clientY - parent.offsetTop + parent.scrollTop + window.pageYOffset;
         correctX = (mouseX + scalingOffsetX - dragOffsetX) / newScale;
         correctY = (mouseY + scalingOffsetY - dragOffsetY) / newScale;
-
+        console.log(parent.offSetTop);
+        console.log("window.pageYOffset: ", window.pageYOffset)
         correctX = Math.round(correctX);
         correctY = Math.round(correctY);
     }
@@ -177,6 +175,7 @@
         canvas.addEventListener('mouseup', function (evt) {
             mouseX = evt.clientX - parent.offsetLeft;
             mouseY = evt.clientY - parent.offsetTop;
+            getCorrectCoords(evt);
             if (!dragged) {
                 switch (mode) {
                     case "dot": // dot mode
@@ -220,7 +219,6 @@
                 anchorX = evt.clientX;
                 anchorY = evt.clientY;
             }
-            getCorrectCoords(evt);
         }, false);
 
         canvas.addEventListener('mousedown', function (evt) {
@@ -241,6 +239,7 @@
         }
         function reset() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            child.style.transform = "";
             firstPoint = true;
             perimeters = new Array();
             perimeter = new Array();
@@ -312,6 +311,7 @@
                     perimeter = new Array();
                 }
                 // draw closed polygons
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 for (var i = 0; i < perimeters.length; i++) {
                     var ps = perimeters[i];
                     ctx.beginPath();
@@ -320,6 +320,8 @@
                         ctx.lineTo(ps[j][0], ps[j][1]);
                         ctx.stroke();
                     }
+                    ctx.lineTo(ps[0][0], ps[0][1]);
+                    ctx.stroke();
                     ctx.closePath();
                     ctx.fill();
                 }
