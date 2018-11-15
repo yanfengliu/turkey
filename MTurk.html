@@ -24,7 +24,8 @@
     SOFTWARE.
  -->
 
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
+    integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
     crossorigin="anonymous">
 <style>
     #parent {
@@ -142,7 +143,7 @@
         // parent.style.height = img.height + 'px';
 
         var mode_data = "${annotation_mode}";
-        if(mode_data == "${annotation_mode}") // running in local demo mode
+        if(mode_data == ("$" +"{annotation_mode}")) // running in local demo mode
         {
             mode_data = "dot-link-polygon";
         }
@@ -205,6 +206,12 @@
                 ctx.fillRect(correctX - dotSize/2, correctY - dotSize/2, dotSize, dotSize);
             }
             dragStart = false;
+            // print coordinates
+            if (perimeters.length == 0) {
+                document.getElementById('coordinates').value = '';
+            } else {
+                document.getElementById('coordinates').value = JSON.stringify(perimeters);
+            }
         }, false);
 
 
