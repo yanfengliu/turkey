@@ -1,4 +1,4 @@
-![demo_pic](https://i.imgur.com/7VuTnFT.jpg)
+![demo_pic](https://i.imgur.com/s0klKA3.jpg)
 
 # **turkey**: an Amazon Mechanical Turk turn-key segment tool. 
 
@@ -13,12 +13,12 @@ Authors:
 Copy the contents of `Mturk.html` into the source code section when you create a custom HIT in the Amazon Turk Requester. After the HIT is created, simply **Publish Batch** with a CSV file of both image URIs and annotation modes that you provide. A sample CSV file may look like:
 
 ```
-img_url, annotation_mode
-https://i.imgur.com/kcCSGTR.jpg, dot-polygon-link
-https://i.imgur.com/2yOma1u.jpg, polygon
+img_url,annotation_mode,classes
+https://i.imgur.com/kcCSGTR.jpg, dot-polygon-link, house-person-car-dog
+https://i.imgur.com/2yOma1u.jpg, polygon, house-person-car-dog
 ```
 
-Here, we allow the worker to use **Polygon**, **Link** and **Dot** modes for annotating the first image, but only the **Polygon** mode for the second.
+Here, we allow the worker to use **Polygon**, **Link** and **Dot** modes for annotating the first image, but only the **Polygon** mode for the second. The class labels that the user can choose from are **house**, **person**, **car**, and **dog**. The first item in the list will be the default option. 
 
 ## Testing without Turk
 You can test the code before deploying it on MTurk by opening `localDemo.html` in your browser. This file is a lightweight wrapper that will load `MTurk.html` off GitHub, passing a sample image to it in the process.
