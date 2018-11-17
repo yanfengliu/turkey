@@ -29,28 +29,34 @@
     crossorigin="anonymous">
 <style>
     #parent {
-            width: 1000px; 
-            overflow: hidden;
-            position: relative;
-            background:#f5f5f5;
-        }
+        width: 1000px; 
+        overflow: hidden;
+        position: relative;
+        background:#f5f5f5;
+    }
 
-        #myCanvas {
-            position: absolute;
-        }
+    #myCanvas {
+        position: absolute;
+    }
 
-        #pic{
-            width: 100%;
-            height: auto;
-        }
+    #pic{
+        width: 100%;
+        height: auto;
+    }
 
-        #class {
-            float:right;
-        }
-    </style>
-<div style="display:inline-block;vertical-align:top;">
-    <h1 id="title">Insert Desired Title Here</h1>
+    #text {
+        width: 1000px;
+    }
 
+    #class {
+        width: 200px;
+        float:right;
+    }
+</style>
+
+<div id="text" style="display:inline-block;vertical-align:top;">
+    <h1 id="title">Instructions</h1>
+    <select id="class" class="form-control"></select>
     <ul>
         <li>Click to draw points, polygon vertices, and links</li>
         <li>The blue toggle button indicates the current mode</li>
@@ -68,15 +74,11 @@
         <input class="btn btn-info" id="mode_button" type="button" value="Dot Mode" />
     </p>
 
-    <p>
+    <div>
         <!-- Coordinates input from user -->
         <input id="coordinates" name="coordinates" type="hidden" />
-    </p>
+    </div>
 </div>
-
-<select id="class" class="list-group">
-
-</select>
 
 <div id="parent">
     <div id="child">
@@ -148,8 +150,6 @@
         ctx = canvas.getContext("2d");
         img = document.getElementById("pic");
         modeButton = document.getElementById("mode_button");
-        // parent.style.width = img.width + 'px';
-        // parent.style.height = img.height + 'px';
 
         var mode_data = "${annotation_mode}";
         if(mode_data == ("$" +"{annotation_mode}")) // running in local demo mode
@@ -169,21 +169,25 @@
         }
         classes = classes_data.split('-');
 
+        // populate list items and generate unique colors based on string hash
+        var colors = {};
         classes.forEach((theClass) => {
             var option = document.createElement("option");
+            var hue = Math.abs(theClass.hashCode() % 360)/360;
+            var color = [hue, 1.0, 1.0];
             option.innerHTML = theClass;
             classSelection.appendChild(option);
+            colors[theClass] = color;
         });
+        console.log(colors);
 
-        classSelection.size = classes.length;
+        classSelection.size = Math.min(10, classes.length);
         classSelection.selectedIndex = 0;
 
         modeButton.value = capitalize(mode);
 
         canvas.width = img.width;
         canvas.height = img.height;
-
-        ctx.strokeStyle = "rgba(255, 79, 0, 1.0)";
 
         //initialize buttons
         document.getElementById("reset_button").addEventListener("click", function (e) {
@@ -201,9 +205,24 @@
         child.addEventListener('DOMMouseScroll', handleScroll, false);
         child.addEventListener('mousewheel', handleScroll, false);
 
+        var timeDownUp = null;
+
+        canvas.addEventListener('mousedown', function (evt) {
+            timeDownUp = new Date().getTime();
+            // mouse down function go here
+            anchorX = evt.clientX;
+            anchorY = evt.clientY;
+            dragged = false;
+            dragStart = true;
+        });
+
+
         canvas.addEventListener('mouseup', function (evt) {
+            timeDownUp = new Date().getTime();
+            // mouse up function go here
             mouseX = evt.clientX - parent.offsetLeft;
             mouseY = evt.clientY - parent.offsetTop;
+            console.log('here');
             getCorrectCoords(evt);
             if (!dragged) {
                 switch (mode) {
@@ -222,6 +241,7 @@
                         }
                         break;
                     case "polygon": // polygon mode
+                        currentPolygon.class = getClass();
                         currentPolygon.data.push([correctX, correctY]);
                 }
             }
@@ -233,28 +253,32 @@
             } else {
                 document.getElementById('coordinates').value = JSON.stringify(annotations);
             }
-        }, false);
+            console.log(document.getElementById('coordinates').value);
+        });
 
 
         canvas.addEventListener('mousemove', function (evt) {
-            if (dragStart) {
-                dragged = true;
-                dragX = evt.clientX - anchorX;
-                dragY = evt.clientY - anchorY;
-                child.style.transform += 'translate(' + dragX / newScale + 'px, ' + dragY / newScale + 'px)';
-                dragOffsetX += dragX;
-                dragOffsetY += dragY;
-                anchorX = evt.clientX;
-                anchorY = evt.clientY;
+            var timeMove = new Date().getTime();
+            timeDownUp += 30;
+            if (timeMove > timeDownUp) {
+                if (event.which === 1) {
+                    // mouse move function go here
+                    if (dragStart) {
+                        dragged = true;
+                        dragX = evt.clientX - anchorX;
+                        dragY = evt.clientY - anchorY;
+                        child.style.transform += 'translate(' + dragX / newScale + 'px, ' + dragY / newScale + 'px)';
+                        dragOffsetX += dragX;
+                        dragOffsetY += dragY;
+                        anchorX = evt.clientX;
+                        anchorY = evt.clientY;
+                    }
+                }
+            } else {
+                timeDownUp = null;
             }
-        }, false);
+        });
 
-        canvas.addEventListener('mousedown', function (evt) {
-            anchorX = evt.clientX;
-            anchorY = evt.clientY;
-            dragged = false;
-            dragStart = true;
-        }, false);
 
         function toggleMode() {
             // clearAnnotations();
@@ -292,14 +316,23 @@
             for (var i = 0; i < annotations.length; i++){
                 var ann = annotations[i];
                 var corners = ann.data; 
+                var color = colors[ann.class];
+                var h = color[0];
+                var s = color[1];
+                var v = color[2];
+                var rgbColors = HSVtoRGB(h, s, v);
+                var r = rgbColors.r.toString();
+                var g = rgbColors.g.toString();
+                var b = rgbColors.b.toString();
                 switch(ann.mode){
                     case "dot":
-                        ctx.fillStyle = "rgba(255, 79, 0, 1.0)";
+                        ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                         ctx.fillRect(corners[0] - dotSize/2, corners[1] - dotSize/2, dotSize, dotSize);
                         break;
                     case "link": 
                         // draw complete links
-                        ctx.fillStyle = "rgba(255, 79, 0, 1.0)";
+                        ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+                        ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                         ctx.beginPath();
                         ctx.moveTo(corners[0][0], corners[0][1]);
                         ctx.lineTo(corners[1][0], corners[1][1]);
@@ -310,7 +343,8 @@
                         break;
                     case "polygon": 
                         // draw complete polygons
-                        ctx.fillStyle = "rgba(255, 79, 0, 0.5)";
+                        ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 0.5)";
+                        ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                         ctx.beginPath();
                         ctx.moveTo(corners[0][0], corners[0][1]);
                         for (var j = 1; j < corners.length; j++) {
@@ -326,21 +360,37 @@
             
             // draw current link
             if (currentLink.data.length != 0){
-                ctx.fillStyle = "rgba(255, 79, 0, 1.0)";
+                var color = colors[currentLink.class];
+                var h = color[0];
+                var s = color[1];
+                var v = color[2];
+                var rgbColors = HSVtoRGB(h, s, v);
+                var r = rgbColors.r.toString();
+                var g = rgbColors.g.toString();
+                var b = rgbColors.b.toString();
+                ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+                ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                 var dot = currentLink.data;
                 ctx.fillRect(dot[0][0] - dotSize/2, dot[0][1] - dotSize/2, dotSize, dotSize);
             }
 
             // draw current polygon
             if (currentPolygon.data.length != 0){
-                ctx.fillStyle = "rgba(255, 79, 0, 0.5)";
+                var color = colors[currentPolygon.class];
+                var h = color[0];
+                var s = color[1];
+                var v = color[2];
+                var rgbColors = HSVtoRGB(h, s, v);
+                var r = rgbColors.r.toString();
+                var g = rgbColors.g.toString();
+                var b = rgbColors.b.toString();
+                ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 0.5)";
+                ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                 var dots = currentPolygon.data;
                 for (var j = 0; j < dots.length; j++) {
                     ctx.fillRect(dots[j][0] - dotSize/2, dots[j][1] - dotSize/2, dotSize, dotSize);
                 }
             }
-
-
         }
 
         function undo() {
@@ -378,12 +428,12 @@
 
             // Press C for "Close Polygon"
             if (evt.key == 'c') {
-                if (currentPolygon.data.length >= 0) {
+                if (currentPolygon.data.length > 0) {
                     currentPolygon.class = getClass();
                     annotations.push(Object.assign({}, currentPolygon));
                     currentPolygon.data = new Array();
                 } else {
-                    alert("Annotation incomplete: a polygon cannot have fewer than 3 vertices.")
+                    alert("Pressing C closes current polygon. Polygon with fewer than 3 vertices detected.")
                 }
             }
             updateGraphics();
@@ -397,6 +447,44 @@
 function capitalize(string) 
 {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+String.prototype.hashCode = function() {
+    var hash = 0;
+    if (this.length == 0) {
+        return hash;
+    }
+    for (var i = 0; i < this.length; i++) {
+        var char = this.charCodeAt(i);
+        hash = ((hash<<5)-hash)+char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+}
+
+function HSVtoRGB(h, s, v) {
+    var r, g, b, i, f, p, q, t;
+    if (arguments.length === 1) {
+        s = h.s, v = h.v, h = h.h;
+    }
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+    };
 }
 
 </script>
