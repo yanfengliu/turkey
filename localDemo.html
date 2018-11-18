@@ -55,7 +55,7 @@
             document.getElementById("pic").onload = function() {start(); }
             document.getElementById("submitButton").addEventListener("click", function(e) {
                 document.getElementById("outputLabel").style.visibility = "visible";
-                document.getElementById("output").innerHTML = JSON.stringify(perimeters); 
+                document.getElementById("output").innerHTML = JSON.stringify(annotations); 
             });
 
             document.getElementById("reset_button").addEventListener("click", function(e) {

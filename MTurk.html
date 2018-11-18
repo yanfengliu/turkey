@@ -478,7 +478,7 @@
 
             // Press C for "Close Polygon"
             if (evt.key == 'c') {
-                if (currentPolygon.data.length > 0) {
+                if (currentPolygon.data.length > 2) {
                     currentPolygon.class = getClass();
                     annotations.push(Object.assign({}, currentPolygon));
                     currentPolygon.data = new Array();
