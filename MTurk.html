@@ -70,7 +70,8 @@
 
     <p id="buttons">
         <input class="btn btn-secondary" id="undo_button" type="button" value="Undo" />
-        <input class="btn btn-danger" id="reset_button" type="Reset" value="Reset" />
+        <input class="btn btn-danger" id="reset_button" type="button" value="Reset" />
+        <input class="btn btn-danger" id="reposition_button" type="button" value="Reposition" />
         <input class="btn btn-info" id="mode_button" type="button" value="Dot Mode" />
     </p>
 
@@ -90,16 +91,14 @@
 
 
 <script id="turkey" type="text/javascript">
-    var translateX, translateY, delta, scaleRatio, scaleDiff;
+    var translateX, translateY, delta, scaleRatio;
     var anchorX, anchorY, dragged, dragStart, dragX, dragY;
-    var perimeter = new Array();
     var annotations = new Array();
     var dragOffsetX = 0;
     var dragOffsetY = 0;
     var scalingOffsetX = 0;
     var scalingOffsetY = 0;
-    var correctX, correctY;
-    var mouseX, mouseY;
+    var correctX, correctY, mouseX, mouseY;
     var oldScale = 1.0;
     var newScale = 1.0;
     var canvas = 0;
@@ -110,6 +109,9 @@
     var modeNum = 0;
     var classSelection;
     var dotSize = 5;
+    var firstTransform = true; 
+    var lastTransform, scaleTransform, translateTransform;
+    var transformQueue = new Array();
 
     var currentLink = {'class': [], 'mode': 'link', 'data' : []};
     var currentPolygon = {'class': [], 'mode': 'polygon', 'data' : []};;
@@ -121,18 +123,40 @@
         newScale = Math.max(newScale, 1.0);
         newScale = Math.min(newScale, 5.0);
         scaleRatio = newScale / oldScale;
-        scaleDiff = newScale - oldScale;
         oldScale = newScale;
 
         scalingOffsetX = (newScale - 1) * 0.5 * parent.offsetWidth;
         scalingOffsetY = (newScale - 1) * 0.5 * parent.offsetHeight;
 
-        child.style.transform += 'scale(' + scaleRatio + ', ' + scaleRatio + ')';
-
+        if (firstTransform){
+            scaleTransform = scaleRatio;
+            firstTransform = false;
+            lastTransform = "scale";
+        } else {
+            if (lastTransform == "scale"){
+                scaleTransform = scaleTransform * scaleRatio;
+                transformQueue.pop();
+            } else {
+                lastTransform = "scale";
+                scaleTransform = scaleRatio;
+                lastTransform = "scale";
+            }
+        }
+        transformQueue.push('scale(' + scaleTransform + ', ' + scaleTransform + ')');
+        updateTransform();
         getCorrectCoords(evt);
 
         return evt.preventDefault() && false;
     };
+
+    function updateTransform(){
+        child.style.transform = "";
+        for (var i = 0; i < transformQueue.length; i++){
+            transformString = transformQueue[i];
+            child.style.transform += transformString;
+        }
+        console.log(transformQueue);
+    }
 
     function getCorrectCoords(evt) {
         mouseX = evt.clientX - parent.offsetLeft;
@@ -179,7 +203,6 @@
             classSelection.appendChild(option);
             colors[theClass] = color;
         });
-        console.log(colors);
 
         classSelection.size = Math.min(10, classes.length);
         classSelection.selectedIndex = 0;
@@ -192,6 +215,9 @@
         //initialize buttons
         document.getElementById("reset_button").addEventListener("click", function (e) {
             reset();
+        });
+        document.getElementById("reposition_button").addEventListener("click", function (e) {
+            reposition();
         });
         document.getElementById("undo_button").addEventListener("click", function (e) {
             undo();
@@ -222,7 +248,6 @@
             // mouse up function go here
             mouseX = evt.clientX - parent.offsetLeft;
             mouseY = evt.clientY - parent.offsetTop;
-            console.log('here');
             getCorrectCoords(evt);
             if (!dragged) {
                 switch (mode) {
@@ -253,7 +278,6 @@
             } else {
                 document.getElementById('coordinates').value = JSON.stringify(annotations);
             }
-            console.log(document.getElementById('coordinates').value);
         });
 
 
@@ -267,7 +291,21 @@
                         dragged = true;
                         dragX = evt.clientX - anchorX;
                         dragY = evt.clientY - anchorY;
-                        child.style.transform += 'translate(' + dragX / newScale + 'px, ' + dragY / newScale + 'px)';
+                        if (firstTransform){
+                            translateTransform = [dragX/newScale, dragY/newScale];
+                            firstTransform = false;
+                            lastTransform = "translate";
+                        } else {
+                            if (lastTransform == "translate"){
+                                translateTransform = [translateTransform[0] + dragX/newScale, translateTransform[1] + dragY/newScale];
+                                transformQueue.pop();
+                            } else {
+                                translateTransform = [dragX/newScale, dragY/newScale];
+                                lastTransform = "translate";
+                            }
+                        }
+                        transformQueue.push('translate(' + translateTransform[0] + 'px, ' + translateTransform[1] + 'px)');
+                        updateTransform();
                         dragOffsetX += dragX;
                         dragOffsetY += dragY;
                         anchorX = evt.clientX;
@@ -292,13 +330,23 @@
         }
         function reset() {
             clearAnnotations();
+            reposition();
+            firstPoint = true;
+        }
+
+        function reposition(){
             child.style.transform = "";
+            firstTransform = true; 
+            scaleTransform = 1.0;
+            translateTransform = [0, 0];
+            transformQueue = new Array();
             newScale = 1.0;
+            oldScale = 1.0;
+            scaleRatio = 1.0;
             dragOffsetX = 0;
             dragOffsetY = 0;
             scalingOffsetX = 0;
             scalingOffsetY = 0;
-            firstPoint = true;
         }
 
         function clearAnnotations() {
@@ -393,6 +441,7 @@
             }
         }
 
+
         function undo() {
             switch(mode){
                 case "dot":
@@ -414,6 +463,7 @@
             }
             updateGraphics();
         }
+
 
         window.addEventListener("keydown", function (evt) {
             // Press E for "Mode toggle"

@@ -28,7 +28,7 @@ You can test the code before deploying it on MTurk by opening `localDemo.html` i
  * The blue toggle button indicates the current mode
  * Press **CTRL+Z** to undo.
  * Press **C** to close polygon in polygon mode.
- * Press **Reset** to clear everything.
- * Dot mode indicates the location of the object with one click. 
- * Link mode indicates head (1st click) and tail (2nd click).
- * Polygon mode draws the segmentation mask of the object.
+ * Click **Reset** to clear everything.
+ * **Dot** mode indicates the location of the object with one click. 
+ * **Link** mode indicates head (1st click) and tail (2nd click).
+ * **Polygon** mode draws the segmentation mask of the object.
