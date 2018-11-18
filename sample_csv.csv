@@ -1,3 +1,3 @@
-img_url,annotation_mode
-https://i.imgur.com/kcCSGTR.jpg,polygon-dot
-https://i.imgur.com/2yOma1u.jpg,polygon
+img_url,annotation_mode,classes
+https://i.imgur.com/kcCSGTR.jpg, polygon-dot, person-dog-car-house
+https://i.imgur.com/2yOma1u.jpg, polygon, person-dog-car-house
