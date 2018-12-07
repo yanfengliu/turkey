@@ -485,6 +485,12 @@
                 } else {
                     alert("Pressing C closes current polygon. Polygon with fewer than 3 vertices detected.")
                 }
+                // Update coordinates
+                if (annotations.length == 0) {
+                    document.getElementById('coordinates').value = '';
+                } else {
+                    document.getElementById('coordinates').value = JSON.stringify(annotations);
+                }
             }
             updateGraphics();
         }, true);
