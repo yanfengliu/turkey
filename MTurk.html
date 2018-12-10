@@ -24,7 +24,8 @@
     SOFTWARE.
  -->
 
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
+<link rel="stylesheet" 
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
     integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
     crossorigin="anonymous">
 <style>
@@ -91,78 +92,63 @@
 
 
 <script id="turkey" type="text/javascript">
-    var translateX, translateY, delta, scaleRatio;
+    var translateX, translateY, delta, scaleRatio, scaleDiff;
     var anchorX, anchorY, dragged, dragStart, dragX, dragY;
+    var correctX, correctY, mouseX, mouseY;
+    var child, parent, canvas, ctx, img;
     var annotations = new Array();
     var dragOffsetX = 0;
     var dragOffsetY = 0;
     var scalingOffsetX = 0;
     var scalingOffsetY = 0;
-    var correctX, correctY, mouseX, mouseY;
-    var oldScale = 1.0;
-    var newScale = 1.0;
+    var oldScale = newScale = 1.0;
     var canvas = 0;
-    var child, parent, canvas, ctx, img = 0;
     var firstPoint = true;
     var mode = "";
     var modes;
     var modeNum = 0;
     var classSelection;
-    var dotSize = 5;
-    var firstTransform = true; 
-    var lastTransform, scaleTransform, translateTransform;
-    var transformQueue = new Array();
+    var dotSize = 8;
+    var scaleTransform = 1;
+    var translateTransform = [0, 0];
+    var translateTransform_raw = [0, 0];
 
     var currentLink = {'class': [], 'mode': 'link', 'data' : []};
     var currentPolygon = {'class': [], 'mode': 'polygon', 'data' : []};;
 
     var handleScroll = function (evt) {
+        getCorrectCoords(evt);
         delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
 
         newScale += delta / 10;
         newScale = Math.max(newScale, 1.0);
         newScale = Math.min(newScale, 5.0);
-        scaleRatio = newScale / oldScale;
-        oldScale = newScale;
+        scaleRatio = newScale/oldScale;
+        scaleDiff = newScale - oldScale;
+        oldScale = scaleTransform = newScale;
 
-        scalingOffsetX = (newScale - 1) * 0.5 * parent.offsetWidth;
-        scalingOffsetY = (newScale - 1) * 0.5 * parent.offsetHeight;
+        scalingOffsetX = (newScale - 1) * parent.offsetWidth/2;
+        scalingOffsetY = (newScale - 1) * parent.offsetHeight/2;
 
-        if (firstTransform){
-            scaleTransform = scaleRatio;
-            firstTransform = false;
-            lastTransform = "scale";
-        } else {
-            if (lastTransform == "scale"){
-                scaleTransform = scaleTransform * scaleRatio;
-                transformQueue.pop();
-            } else {
-                lastTransform = "scale";
-                scaleTransform = scaleRatio;
-                lastTransform = "scale";
-            }
-        }
-        transformQueue.push('scale(' + scaleTransform + ', ' + scaleTransform + ')');
+        translateTransform_raw[0] -= (correctX - parent.offsetWidth/2)*scaleDiff;
+        translateTransform_raw[1] -= (correctY - parent.offsetHeight/2)*scaleDiff;
+
+        translateTransform[0] = translateTransform_raw[0]/newScale;
+        translateTransform[1] = translateTransform_raw[1]/newScale;
         updateTransform();
-        getCorrectCoords(evt);
-
-        return evt.preventDefault() && false;
     };
 
     function updateTransform(){
         child.style.transform = "";
-        for (var i = 0; i < transformQueue.length; i++){
-            transformString = transformQueue[i];
-            child.style.transform += transformString;
-        }
-        console.log(transformQueue);
+        child.style.transform += 'scale(' + scaleTransform + ', ' + scaleTransform + ')';
+        child.style.transform += 'translate(' + translateTransform[0] + 'px, ' + translateTransform[1] + 'px)';
     }
 
     function getCorrectCoords(evt) {
         mouseX = evt.clientX - parent.offsetLeft;
         mouseY = evt.clientY - parent.offsetTop + parent.scrollTop + window.pageYOffset;
-        correctX = (mouseX + scalingOffsetX - dragOffsetX) / newScale;
-        correctY = (mouseY + scalingOffsetY - dragOffsetY) / newScale;
+        correctX = (mouseX + scalingOffsetX - translateTransform_raw[0]) / newScale;
+        correctY = (mouseY + scalingOffsetY - translateTransform_raw[1]) / newScale;
         correctX = Math.round(correctX);
         correctY = Math.round(correctY);
     }
@@ -182,7 +168,6 @@
         }
         modes = mode_data.split('-');
         mode = modes[0];
-
 
         // generate select list options
         classSelection = document.getElementById("class");
@@ -245,9 +230,6 @@
 
         canvas.addEventListener('mouseup', function (evt) {
             timeDownUp = new Date().getTime();
-            // mouse up function go here
-            mouseX = evt.clientX - parent.offsetLeft;
-            mouseY = evt.clientY - parent.offsetTop;
             getCorrectCoords(evt);
             if (!dragged) {
                 switch (mode) {
@@ -291,20 +273,9 @@
                         dragged = true;
                         dragX = evt.clientX - anchorX;
                         dragY = evt.clientY - anchorY;
-                        if (firstTransform){
-                            translateTransform = [dragX/newScale, dragY/newScale];
-                            firstTransform = false;
-                            lastTransform = "translate";
-                        } else {
-                            if (lastTransform == "translate"){
-                                translateTransform = [translateTransform[0] + dragX/newScale, translateTransform[1] + dragY/newScale];
-                                transformQueue.pop();
-                            } else {
-                                translateTransform = [dragX/newScale, dragY/newScale];
-                                lastTransform = "translate";
-                            }
-                        }
-                        transformQueue.push('translate(' + translateTransform[0] + 'px, ' + translateTransform[1] + 'px)');
+                        translateTransform_raw = [translateTransform_raw[0] + dragX, translateTransform_raw[1] + dragY];
+                        translateTransform[0] = translateTransform_raw[0]/newScale;
+                        translateTransform[1] = translateTransform_raw[1]/newScale;
                         updateTransform();
                         dragOffsetX += dragX;
                         dragOffsetY += dragY;
@@ -432,7 +403,7 @@
                 var r = rgbColors.r.toString();
                 var g = rgbColors.g.toString();
                 var b = rgbColors.b.toString();
-                ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 0.5)";
+                ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                 ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                 var dots = currentPolygon.data;
                 for (var j = 0; j < dots.length; j++) {
