@@ -1,4 +1,5 @@
-![demo_pic](https://i.imgur.com/s0klKA3.jpg)
+![demo_pic](https://i.imgur.com/0wRV01F.png)
+![demo_pic](https://i.imgur.com/oHpZTIu.jpg)
 
 # **turkey**: an Amazon Mechanical Turk turn-key segment tool. 
 
@@ -22,14 +23,3 @@ Here, we allow the worker to use **Polygon**, **Link** and **Dot** modes for ann
 
 ## Testing without Turk
 You can test the code before deploying it on MTurk by opening `localDemo.html` in your browser. This file is a lightweight wrapper that will load `MTurk.html` off GitHub, passing a sample image to it in the process.
-
-## Directions for the worker
- * Click to draw points, polygon vertices, and links
- * The blue toggle button indicates the current mode
- * Press **CTRL+Z** to undo.
- * Press **C** to close polygon in polygon mode.
- * Click **Reset** to clear everything.
- * Click **Reposition** to center the image and zoom back.
- * **Dot** mode indicates the location of the object with one click. 
- * **Link** mode indicates head (1st click) and tail (2nd click).
- * **Polygon** mode draws the segmentation mask of the object.
