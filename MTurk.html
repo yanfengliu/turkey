@@ -36,6 +36,10 @@
         background:#f5f5f5;
     }
 
+    #child{
+        margin: auto;
+    }
+
     #myCanvas {
         position: absolute;
     }
@@ -49,6 +53,10 @@
         width: 1000px;
     }
 
+    .btn:hover {
+        text-shadow:0px 0px 1px black;
+    }
+
     #class {
         width: 200px;
         float:right;
@@ -59,23 +67,25 @@
     <h1 id="title">Instructions</h1>
     <select id="class" class="form-control"></select>
     <ul>
-        <li>Click to draw points, polygon vertices, and links</li>
-        <li>The blue toggle button indicates the current mode</li>
-        <li>Press <strong>CTRL+Z</strong> to undo.</li>
+        <li>Click to annotate the image using up to three modes:</li>
+        <ul>
+            <li>Dot mode indicates the location of the object with one click. </li>
+            <li>Link mode indicates head (1st click) and tail (2nd click).</li>
+            <li>Polygon mode draws the segmentation mask of the object.</li>
+        </ul>
+        <li>The <strong>Mode toggle</strong> button indicates the current mode</li>
+        <li>Press <strong>CTRL+Z</strong> or click the <strong>Undo</strong> button to undo last annotation.</li>
         <li>Press <strong>C</strong> to close polygon in polygon mode.</li>
-        <li>Press <strong>Reset</strong> to clear everything.</li>
-        <li>Click <strong>Reset</strong> to clear everything.</li>
-        <li>Click <strong>Reposition</strong> to center the image and zoom back.</li>
-        <li>Dot mode indicates the location of the object with one click. </li>
-        <li>Link mode indicates head (1st click) and tail (2nd click).</li>
-        <li>Polygon mode draws the segmentation mask of the object.</li>
+        <li>Click the <strong>Reset</strong> button to clear all annotations.</li>
+        <li>Click the <strong>Reposition</strong> button to center the image and reset zoom.</li>
+        <li>Click the <strong>Submit</strong> button to finish current task.</li>
     </ul>
 
     <p id="buttons">
+        <input class="btn btn-info" id="mode_button" type="button" value="Dot Mode" />
         <input class="btn btn-secondary" id="undo_button" type="button" value="Undo" />
         <input class="btn btn-danger" id="reset_button" type="button" value="Reset" />
-        <input class="btn btn-danger" id="reposition_button" type="button" value="Reposition" />
-        <input class="btn btn-info" id="mode_button" type="button" value="Dot Mode" />
+        <input class="btn btn-warning" id="reposition_button" type="button" value="Reposition" />
     </p>
 
     <div>
@@ -104,7 +114,6 @@
     var scalingOffsetX = 0;
     var scalingOffsetY = 0;
     var oldScale = newScale = 1.0;
-    var canvas = 0;
     var firstPoint = true;
     var mode = "";
     var modes;
@@ -194,7 +203,7 @@
         classSelection.size = Math.min(10, classes.length);
         classSelection.selectedIndex = 0;
 
-        modeButton.value = capitalize(mode);
+        modeButton.value = 'Mode: ' + capitalize(mode);
 
         canvas.width = img.width;
         canvas.height = img.height;
@@ -299,7 +308,7 @@
             }
 
             mode = modes[modeNum];
-            modeButton.value = capitalize(mode);
+            modeButton.value = 'Mode: ' + capitalize(mode);
         }
         function reset() {
             clearAnnotations();
@@ -309,13 +318,13 @@
 
         function reposition(){
             child.style.transform = "";
-            firstTransform = true; 
             scaleTransform = 1.0;
             translateTransform = [0, 0];
-            transformQueue = new Array();
+            translateTransform_raw = [0, 0];
             newScale = 1.0;
             oldScale = 1.0;
             scaleRatio = 1.0;
+            scaleDiff = 0;
             dragOffsetX = 0;
             dragOffsetY = 0;
             scalingOffsetX = 0;
