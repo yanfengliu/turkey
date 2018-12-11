@@ -23,3 +23,6 @@ Here, we allow the worker to use **Polygon**, **Link** and **Dot** modes for ann
 
 ## Testing without Turk
 You can test the code before deploying it on MTurk by opening `localDemo.html` in your browser. This file is a lightweight wrapper that will load `MTurk.html` off GitHub, passing a sample image to it in the process.
+
+## Unpacking data from .csv file
+After the users annotate the images, Amazon Mechanical Turk provides a `.csv` file ready for downloading. `getResults.m` contains a sample MATLAB code that automatically reads in data from the file and displays the annotations. 
