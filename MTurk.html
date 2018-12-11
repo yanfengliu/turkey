@@ -129,13 +129,13 @@
     var modes;
     var modeNum = 0;
     var classSelection;
-    var dotSize = 8;
+    var dotSize = 4;
     var scaleTransform = 1;
     var translateTransform = [0, 0];
     var translateTransform_raw = [0, 0];
 
     var currentLink = {'class': [], 'mode': 'link', 'data' : []};
-    var currentPolygon = {'class': [], 'mode': 'polygon', 'data' : []};;
+    var currentPolygon = {'class': [], 'mode': 'polygon', 'data' : []};
 
     $('#instruction').slideUp(1500);
 
@@ -348,8 +348,9 @@
         }
 
         function clearAnnotations() {
-            perimeter = new Array();
             annotations = new Array();
+            currentLink = {'class': [], 'mode': 'link', 'data' : []};
+            currentPolygon = {'class': [], 'mode': 'polygon', 'data' : []};
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
