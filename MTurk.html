@@ -437,6 +437,15 @@
                 for (var j = 0; j < dots.length; j++) {
                     ctx.fillRect(dots[j][0] - dotSize/2, dots[j][1] - dotSize/2, dotSize, dotSize);
                 }
+                // draw lines connecting the dots
+                ctx.beginPath();
+                ctx.moveTo(dots[0][0], dots[0][1]);
+                for (var j = 1; j < dots.length; j++) {
+                    ctx.lineTo(dots[j][0], dots[j][1]);
+                    ctx.stroke();
+                }
+                ctx.stroke();
+                ctx.closePath();
             }
         }
 
