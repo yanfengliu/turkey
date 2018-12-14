@@ -67,18 +67,17 @@
         float:right;
     }
 
-    #title:hover {
-        cursor: pointer;
-        color: #0080ff;
-    }
-
     #text {
         margin-bottom: 20px;
+    }
+
+    #buttons {
+        margin-top: 20px;
     }
 </style>
 
 <div id="text" style="display:inline-block;vertical-align:top;">
-    <h1 id="title">Instructions (click to expand)</h1>
+    <button id="title" type="button" class="btn btn-outline-primary btn-lg">Instructions</button>
     <select id="class" class="form-control"></select>
     <ul id="instruction">
         <li>Click to annotate the image using up to three modes:</li>
@@ -88,7 +87,7 @@
             <li><strong>Polygon mode</strong> draws the segmentation mask of the object.</li>
         </ul>
         <li>The <strong>Mode toggle</strong> button indicates the current mode</li>
-        <li>Press <strong>Delete/Annotate</strong> flip switch to toggle between deleting and annotating.</li>
+        <li>Click <strong>Delete/Annotate</strong> flip switch or press <strong>D</strong> to toggle between deleting and annotating.</li>
         <li>Press <strong>CTRL+Z</strong> or click the <strong>Undo</strong> button to undo last annotation.</li>
         <li>Press <strong>C</strong> to close polygon in polygon mode.</li>
         <li>Click the <strong>Reset</strong> button to clear all annotations.</li>
