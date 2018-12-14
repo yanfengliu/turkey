@@ -58,6 +58,10 @@
         text-shadow:0px 0px 1px black;
     }
 
+    .fixed_width {
+        width: 130px !important;
+    }
+
     #class {
         width: 200px;
         float:right;
@@ -66,6 +70,10 @@
     #title:hover {
         cursor: pointer;
         color: #0080ff;
+    }
+
+    #text {
+        margin-bottom: 20px;
     }
 </style>
 
@@ -89,7 +97,7 @@
     </ul>
 
     <p id="buttons">
-        <input class="btn btn-info" id="mode_button" type="button" value = "Dot Mode" />
+        <input class="btn btn-info fixed_width" id="mode_button" type="button" value = "Dot Mode" />
         <span class="btn-group btn-group-toggle" data-toggle="buttons">
             <label class="btn btn-outline-secondary" type="radio" name="options" id="delete_button" autocomplete="off" checked> Delete </label>
             <label class="btn btn-primary" type="radio" name="options" id="annotate_button" autocomplete="off"> Annotate </label>
