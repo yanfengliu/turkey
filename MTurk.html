@@ -24,13 +24,9 @@
     SOFTWARE.
  -->
 
-<link rel="stylesheet" 
-    href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
-    integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
     crossorigin="anonymous">
-<link crossorigin="anonymous" 
-    href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" 
-    integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" 
+<link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU"
     rel="stylesheet" />
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <style>
@@ -79,9 +75,9 @@
     <ul id="instruction">
         <li>Click to annotate the image using up to three modes:</li>
         <ul>
-            <li>Dot mode indicates the location of the object with one click. </li>
-            <li>Link mode indicates head (1st click) and tail (2nd click).</li>
-            <li>Polygon mode draws the segmentation mask of the object.</li>
+            <li><strong>Dot mode</strong> indicates the location of the object with one click. </li>
+            <li><strong>Link mode</strong> indicates head (1st click) and tail (2nd click).</li>
+            <li><strong>Polygon mode</strong> draws the segmentation mask of the object.</li>
         </ul>
         <li>The <strong>Mode toggle</strong> button indicates the current mode</li>
         <li>Press <strong>CTRL+Z</strong> or click the <strong>Undo</strong> button to undo last annotation.</li>
@@ -92,12 +88,18 @@
     </ul>
 
     <p id="buttons">
-        <input class="btn btn-info" id="mode_button" type="button" value="Dot Mode" />
-        <input class="btn btn-secondary" id="undo_button" type="button" value="Undo" />
-        <input class="btn btn-danger" id="reset_button" type="button" value="Reset" />
-        <input class="btn btn-warning" id="reposition_button" type="button" value="Reposition" />
+        <input class="btn btn-info" id="mode_button" type="button" value = "Dot Mode" />
+        <span class="btn-group btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-outline-secondary" type="radio" name="options" id="delete_button" autocomplete="off" checked> Delete </label>
+            <label class="btn btn-primary" type="radio" name="options" id="annotate_button" autocomplete="off"> Annotate </label>
+        </span>
+        <input class="btn btn-warning" id="undo_button" type="button" value = "Undo" />
+        <input class="btn btn-warning" id="reset_button" type="button" value = "Reset" />
+        <input class="btn btn-warning" id="reposition_button" type="button" value = "Reposition" />
     </p>
 
+    
+    
     <div>
         <!-- Coordinates input from user -->
         <input id="coordinates" name="coordinates" type="hidden" />
@@ -132,13 +134,16 @@
     var scaleTransform = 1;
     var translateTransform = [0, 0];
     var translateTransform_raw = [0, 0];
+    var delete_mode = false;
+    var delete_idx = -1;
+    var trashcan = [];
 
-    var currentLink = {'class': [], 'mode': 'link', 'data' : []};
-    var currentPolygon = {'class': [], 'mode': 'polygon', 'data' : []};
+    var currentLink = { 'class': [], 'mode': 'link', 'data': [] };
+    var currentPolygon = { 'class': [], 'mode': 'polygon', 'data': [] };
 
     $('#instruction').slideUp(1500);
 
-    $('#title').click(function(){
+    $('#title').click(function () {
         $('#instruction').slideToggle();
     });
 
@@ -149,22 +154,22 @@
         newScale += delta / 10;
         newScale = Math.max(newScale, 1.0);
         newScale = Math.min(newScale, 5.0);
-        scaleRatio = newScale/oldScale;
+        scaleRatio = newScale / oldScale;
         scaleDiff = newScale - oldScale;
         oldScale = scaleTransform = newScale;
 
-        scalingOffsetX = (newScale - 1) * parent.offsetWidth/2;
-        scalingOffsetY = (newScale - 1) * parent.offsetHeight/2;
+        scalingOffsetX = (newScale - 1) * parent.offsetWidth / 2;
+        scalingOffsetY = (newScale - 1) * parent.offsetHeight / 2;
 
-        translateTransform_raw[0] -= (correctX - parent.offsetWidth/2)*scaleDiff;
-        translateTransform_raw[1] -= (correctY - parent.offsetHeight/2)*scaleDiff;
+        translateTransform_raw[0] -= (correctX - parent.offsetWidth / 2) * scaleDiff;
+        translateTransform_raw[1] -= (correctY - parent.offsetHeight / 2) * scaleDiff;
 
-        translateTransform[0] = translateTransform_raw[0]/newScale;
-        translateTransform[1] = translateTransform_raw[1]/newScale;
+        translateTransform[0] = translateTransform_raw[0] / newScale;
+        translateTransform[1] = translateTransform_raw[1] / newScale;
         updateTransform();
     };
 
-    function updateTransform(){
+    function updateTransform() {
         child.style.transform = "";
         child.style.transform += 'scale(' + scaleTransform + ', ' + scaleTransform + ')';
         child.style.transform += 'translate(' + translateTransform[0] + 'px, ' + translateTransform[1] + 'px)';
@@ -179,6 +184,34 @@
         correctY = Math.round(correctY);
     }
 
+    function get_dist(pair_a, pair_b) {
+        var distance = Math.sqrt(Math.pow((pair_a[0] - pair_b[0]), 2), Math.pow((pair_a[1] - pair_b[1]), 2));
+        return distance;
+    }
+
+    function deep_copy(obj){
+        return jQuery.extend(true, {}, obj);
+    }
+
+    function inside(point, vs) {
+        // ray-casting algorithm based on
+        // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+
+        var x = point[0], y = point[1];
+
+        var inside = false;
+        for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+            var xi = vs[i][0], yi = vs[i][1];
+            var xj = vs[j][0], yj = vs[j][1];
+
+            var intersect = ((yi > y) != (yj > y))
+                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+
+        return inside;
+    };
+
     var start = function () {
         parent = document.getElementById("parent");
         child = document.getElementById("child");
@@ -188,7 +221,7 @@
         modeButton = document.getElementById("mode_button");
 
         var mode_data = "${annotation_mode}";
-        if(mode_data == ("$" +"{annotation_mode}")) // running in local demo mode
+        if (mode_data == ("$" + "{annotation_mode}")) // running in local demo mode
         {
             mode_data = "dot-link-polygon";
         }
@@ -198,7 +231,7 @@
         // generate select list options
         classSelection = document.getElementById("class");
         var classes_data = "${classes}";
-        if(classes_data == ("$" +"{classes}")) // running in local demo mode
+        if (classes_data == ("$" + "{classes}")) // running in local demo mode
         {
             classes_data = "person-dog-house-car";
         }
@@ -208,7 +241,7 @@
         var colors = {};
         classes.forEach((theClass) => {
             var option = document.createElement("option");
-            var hue = Math.abs(theClass.hashCode() % 360)/360;
+            var hue = Math.abs(theClass.hashCode() % 360) / 360;
             var color = [hue, 1.0, 1.0];
             option.innerHTML = theClass;
             classSelection.appendChild(option);
@@ -236,6 +269,12 @@
         document.getElementById("mode_button").addEventListener("click", function (e) {
             toggleMode();
         });
+        document.getElementById("delete_button").addEventListener("click", function (e) {
+            set_delete();
+        });
+        document.getElementById("annotate_button").addEventListener("click", function (e) {
+            set_annotate();
+        });
         document.getElementById("submitButton").disabled = false;
         document.getElementById("buttons").appendChild(document.getElementById("submitButton"));
 
@@ -258,24 +297,33 @@
             timeDownUp = new Date().getTime();
             getCorrectCoords(evt);
             if (!dragged) {
-                switch (mode) {
-                    case "dot": // dot mode
-                        annotations.push({'class': getClass(), 'mode': 'dot', 'data' : [correctX, correctY]});
-                        break;
-                    case "link": // link mode
-                        currentLink.class = getClass();
-                        currentLink.data.push([correctX, correctY]);
-                        if (firstPoint) {
-                            firstPoint = false;
-                        } else {
-                            annotations.push(Object.assign({}, currentLink));
-                            currentLink.data = new Array();
-                            firstPoint = true;
-                        }
-                        break;
-                    case "polygon": // polygon mode
-                        currentPolygon.class = getClass();
-                        currentPolygon.data.push([correctX, correctY]);
+                if (delete_mode == true && delete_idx > -1) {
+                    var ann_copy = deep_copy(annotations[delete_idx]);
+                    trashcan.push(ann_copy);
+                    annotations.splice(delete_idx, 1);
+                    delete_idx = -1;
+                } else if (delete_mode == true && delete_idx == -1) {
+                    alert("No annotation to delete!");
+                } else {
+                    switch (mode) {
+                        case "dot": // dot mode
+                            annotations.push({ 'class': getClass(), 'mode': 'dot', 'data': [correctX, correctY] });
+                            break;
+                        case "link": // link mode
+                            currentLink.class = getClass();
+                            currentLink.data.push([correctX, correctY]);
+                            if (firstPoint) {
+                                firstPoint = false;
+                            } else {
+                                annotations.push(Object.assign({}, currentLink));
+                                currentLink.data = new Array();
+                                firstPoint = true;
+                            }
+                            break;
+                        case "polygon": // polygon mode
+                            currentPolygon.class = getClass();
+                            currentPolygon.data.push([correctX, correctY]);
+                    }
                 }
             }
             updateGraphics();
@@ -294,19 +342,55 @@
             timeDownUp += 30;
             if (timeMove > timeDownUp) {
                 if (event.which === 1) {
-                    // mouse move function go here
                     if (dragStart) {
                         dragged = true;
                         dragX = evt.clientX - anchorX;
                         dragY = evt.clientY - anchorY;
                         translateTransform_raw = [translateTransform_raw[0] + dragX, translateTransform_raw[1] + dragY];
-                        translateTransform[0] = translateTransform_raw[0]/newScale;
-                        translateTransform[1] = translateTransform_raw[1]/newScale;
+                        translateTransform[0] = translateTransform_raw[0] / newScale;
+                        translateTransform[1] = translateTransform_raw[1] / newScale;
                         updateTransform();
                         dragOffsetX += dragX;
                         dragOffsetY += dragY;
                         anchorX = evt.clientX;
                         anchorY = evt.clientY;
+                    } else {
+                        if (delete_mode == true) {
+                            getCorrectCoords(evt);
+                            var min_dist = 1000000;
+                            var dist;
+                            for (var i = 0; i < annotations.length; i++) {
+                                var ann = annotations[i];
+                                var corners = ann.data;
+                                switch (ann.mode) {
+                                    case "dot":
+                                        dist = get_dist([correctX, correctY], corners);
+                                        if (dist < min_dist) {
+                                            min_dist = dist;
+                                            delete_idx = i;
+                                        }
+                                        break;
+                                    case "link":
+                                        for (var j = 0; j < 2; j++) {
+                                            dist = get_dist([correctX, correctY], corners[j]);
+                                            if (dist < min_dist) {
+                                                min_dist = dist;
+                                                delete_idx = i;
+                                            }
+                                        }
+                                        break;
+                                    case "polygon":
+                                        for (var j = 1; j < corners.length; j++) {
+                                            dist = get_dist([correctX, correctY], corners[j]);
+                                            if (dist < min_dist) {
+                                                min_dist = dist;
+                                                delete_idx = i;
+                                            }
+                                        }
+                                }
+                            }
+                            updateGraphics();
+                        }
                     }
                 }
             } else {
@@ -325,13 +409,39 @@
             mode = modes[modeNum];
             modeButton.value = 'Mode: ' + capitalize(mode);
         }
+
+        function toggle_delete () {
+            delete_mode = 1 - delete_mode;
+            $("#delete_button").toggleClass('btn-primary btn-outline-secondary');
+            $("#annotate_button").toggleClass('btn-outline-secondary btn-primary');
+            updateGraphics();
+        }
+
+        function set_delete() {
+            if (delete_mode == false){
+                delete_mode = true;
+                $("#delete_button").toggleClass('btn-primary btn-outline-secondary');
+                $("#annotate_button").toggleClass('btn-outline-secondary btn-primary');
+                updateGraphics();
+            }
+        }
+
+        function set_annotate() {
+            if (delete_mode == true){
+                delete_mode = false;
+                $("#delete_button").toggleClass('btn-primary btn-outline-secondary');
+                $("#annotate_button").toggleClass('btn-outline-secondary btn-primary');
+                updateGraphics();
+            }
+        }
+
         function reset() {
             clearAnnotations();
             reposition();
             firstPoint = true;
         }
 
-        function reposition(){
+        function reposition() {
             child.style.transform = "";
             scaleTransform = 1.0;
             translateTransform = [0, 0];
@@ -348,8 +458,8 @@
 
         function clearAnnotations() {
             annotations = new Array();
-            currentLink = {'class': [], 'mode': 'link', 'data' : []};
-            currentPolygon = {'class': [], 'mode': 'polygon', 'data' : []};
+            currentLink = { 'class': [], 'mode': 'link', 'data': [] };
+            currentPolygon = { 'class': [], 'mode': 'polygon', 'data': [] };
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
@@ -357,25 +467,30 @@
             return classSelection[classSelection.selectedIndex].innerHTML;
         }
 
-        function updateGraphics(){
+        function updateGraphics() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (var i = 0; i < annotations.length; i++){
+            for (var i = 0; i < annotations.length; i++) {
                 var ann = annotations[i];
-                var corners = ann.data; 
-                var color = colors[ann.class];
-                var h = color[0];
-                var s = color[1];
-                var v = color[2];
-                var rgbColors = HSVtoRGB(h, s, v);
-                var r = rgbColors.r.toString();
-                var g = rgbColors.g.toString();
-                var b = rgbColors.b.toString();
-                switch(ann.mode){
+                var corners = ann.data;
+                var r, g, b;
+                if (delete_mode == true && delete_idx == i) {
+                    r = g = b = 0.5;
+                } else {
+                    var color = colors[ann.class];
+                    var h = color[0];
+                    var s = color[1];
+                    var v = color[2];
+                    var rgbColors = HSVtoRGB(h, s, v);
+                    r = rgbColors.r.toString();
+                    g = rgbColors.g.toString();
+                    b = rgbColors.b.toString();
+                }
+                switch (ann.mode) {
                     case "dot":
                         ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
-                        ctx.fillRect(corners[0] - dotSize/2, corners[1] - dotSize/2, dotSize, dotSize);
+                        ctx.fillRect(corners[0] - dotSize / 2, corners[1] - dotSize / 2, dotSize, dotSize);
                         break;
-                    case "link": 
+                    case "link":
                         // draw complete links
                         ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                         ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
@@ -384,10 +499,10 @@
                         ctx.lineTo(corners[1][0], corners[1][1]);
                         ctx.closePath();
                         ctx.stroke();
-                        ctx.fillRect(corners[0][0] - dotSize/2, corners[0][1] - dotSize/2, dotSize, dotSize);
-                        ctx.fillRect(corners[1][0] - dotSize/2, corners[1][1] - dotSize/2, dotSize, dotSize);
+                        ctx.fillRect(corners[0][0] - dotSize / 2, corners[0][1] - dotSize / 2, dotSize, dotSize);
+                        ctx.fillRect(corners[1][0] - dotSize / 2, corners[1][1] - dotSize / 2, dotSize, dotSize);
                         break;
-                    case "polygon": 
+                    case "polygon":
                         // draw complete polygons
                         ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 0.5)";
                         ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
@@ -403,9 +518,9 @@
                         ctx.fill();
                 }
             }
-            
+
             // draw current link
-            if (currentLink.data.length != 0){
+            if (currentLink.data.length != 0) {
                 var color = colors[currentLink.class];
                 var h = color[0];
                 var s = color[1];
@@ -417,11 +532,11 @@
                 ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                 ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                 var dot = currentLink.data;
-                ctx.fillRect(dot[0][0] - dotSize/2, dot[0][1] - dotSize/2, dotSize, dotSize);
+                ctx.fillRect(dot[0][0] - dotSize / 2, dot[0][1] - dotSize / 2, dotSize, dotSize);
             }
 
             // draw current polygon
-            if (currentPolygon.data.length != 0){
+            if (currentPolygon.data.length != 0) {
                 var color = colors[currentPolygon.class];
                 var h = color[0];
                 var s = color[1];
@@ -434,7 +549,7 @@
                 ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                 var dots = currentPolygon.data;
                 for (var j = 0; j < dots.length; j++) {
-                    ctx.fillRect(dots[j][0] - dotSize/2, dots[j][1] - dotSize/2, dotSize, dotSize);
+                    ctx.fillRect(dots[j][0] - dotSize / 2, dots[j][1] - dotSize / 2, dotSize, dotSize);
                 }
                 // draw lines connecting the dots
                 ctx.beginPath();
@@ -449,19 +564,19 @@
         }
 
         function undo() {
-            switch(mode){
+            switch (mode) {
                 case "dot":
                     annotations.pop();
                     break;
                 case "link":
-                    if (currentLink.data.length == 0){
+                    if (currentLink.data.length == 0) {
                         annotations.pop();
                     } else {
                         currentLink.data = new Array();
                     }
                     break;
                 case "polygon":
-                    if (currentPolygon.data.length == 0){
+                    if (currentPolygon.data.length == 0) {
                         annotations.pop();
                     } else {
                         currentPolygon.data.pop();
@@ -479,6 +594,11 @@
             // Press ctrl + Z for "Undo"
             if ((evt.key == 'z') && (evt.ctrlKey)) {
                 undo();
+            }
+
+            // Press D for "Delete"
+            if ((evt.key == 'd')) {
+                toggle_delete();
             }
 
             // Press C for "Close Polygon"
@@ -505,47 +625,46 @@
         start();
     }
 
-function capitalize(string) 
-{
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
+    function capitalize(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
 
-String.prototype.hashCode = function() {
-    var hash = 0;
-    if (this.length == 0) {
+    String.prototype.hashCode = function () {
+        var hash = 0;
+        if (this.length == 0) {
+            return hash;
+        }
+        for (var i = 0; i < this.length; i++) {
+            var char = this.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32bit integer
+        }
         return hash;
     }
-    for (var i = 0; i < this.length; i++) {
-        var char = this.charCodeAt(i);
-        hash = ((hash<<5)-hash)+char;
-        hash = hash & hash; // Convert to 32bit integer
-    }
-    return hash;
-}
 
-function HSVtoRGB(h, s, v) {
-    var r, g, b, i, f, p, q, t;
-    if (arguments.length === 1) {
-        s = h.s, v = h.v, h = h.h;
+    function HSVtoRGB(h, s, v) {
+        var r, g, b, i, f, p, q, t;
+        if (arguments.length === 1) {
+            s = h.s, v = h.v, h = h.h;
+        }
+        i = Math.floor(h * 6);
+        f = h * 6 - i;
+        p = v * (1 - s);
+        q = v * (1 - f * s);
+        t = v * (1 - (1 - f) * s);
+        switch (i % 6) {
+            case 0: r = v, g = t, b = p; break;
+            case 1: r = q, g = v, b = p; break;
+            case 2: r = p, g = v, b = t; break;
+            case 3: r = p, g = q, b = v; break;
+            case 4: r = t, g = p, b = v; break;
+            case 5: r = v, g = p, b = q; break;
+        }
+        return {
+            r: Math.round(r * 255),
+            g: Math.round(g * 255),
+            b: Math.round(b * 255)
+        };
     }
-    i = Math.floor(h * 6);
-    f = h * 6 - i;
-    p = v * (1 - s);
-    q = v * (1 - f * s);
-    t = v * (1 - (1 - f) * s);
-    switch (i % 6) {
-        case 0: r = v, g = t, b = p; break;
-        case 1: r = q, g = v, b = p; break;
-        case 2: r = p, g = v, b = t; break;
-        case 3: r = p, g = q, b = v; break;
-        case 4: r = t, g = p, b = v; break;
-        case 5: r = v, g = p, b = q; break;
-    }
-    return {
-        r: Math.round(r * 255),
-        g: Math.round(g * 255),
-        b: Math.round(b * 255)
-    };
-}
 
 </script>
