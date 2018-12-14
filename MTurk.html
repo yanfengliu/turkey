@@ -136,7 +136,7 @@
     var translateTransform_raw = [0, 0];
     var delete_mode = false;
     var delete_idx = -1;
-    var trashcan = [];
+    var trashcan = new Array();;
 
     var currentLink = { 'class': [], 'mode': 'link', 'data': [] };
     var currentPolygon = { 'class': [], 'mode': 'polygon', 'data': [] };
@@ -185,7 +185,7 @@
     }
 
     function get_dist(pair_a, pair_b) {
-        var distance = Math.sqrt(Math.pow((pair_a[0] - pair_b[0]), 2), Math.pow((pair_a[1] - pair_b[1]), 2));
+        var distance = Math.sqrt(Math.pow((pair_a[0] - pair_b[0]), 2) + Math.pow((pair_a[1] - pair_b[1]), 2));
         return distance;
     }
 
@@ -458,6 +458,7 @@
 
         function clearAnnotations() {
             annotations = new Array();
+            trashcan = new Array();
             currentLink = { 'class': [], 'mode': 'link', 'data': [] };
             currentPolygon = { 'class': [], 'mode': 'polygon', 'data': [] };
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -564,23 +565,29 @@
         }
 
         function undo() {
-            switch (mode) {
-                case "dot":
-                    annotations.pop();
-                    break;
-                case "link":
-                    if (currentLink.data.length == 0) {
+            if (delete_mode == true){
+                if (trashcan.length > 0) {
+                    annotations.push(trashcan.pop());
+                }
+            } else {
+                switch (mode) {
+                    case "dot":
                         annotations.pop();
-                    } else {
-                        currentLink.data = new Array();
-                    }
-                    break;
-                case "polygon":
-                    if (currentPolygon.data.length == 0) {
-                        annotations.pop();
-                    } else {
-                        currentPolygon.data.pop();
-                    }
+                        break;
+                    case "link":
+                        if (currentLink.data.length == 0) {
+                            annotations.pop();
+                        } else {
+                            currentLink.data = new Array();
+                        }
+                        break;
+                    case "polygon":
+                        if (currentPolygon.data.length == 0) {
+                            annotations.pop();
+                        } else {
+                            currentPolygon.data.pop();
+                        }
+                }
             }
             updateGraphics();
         }
