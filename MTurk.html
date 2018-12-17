@@ -97,7 +97,7 @@
 
     <p id="buttons">
         <input class="btn btn-info fixed_width" id="mode_button" type="button" value = "Dot Mode" />
-        <span class="btn-group btn-group-toggle" data-toggle="buttons">
+        <span id="delete_flip", class="btn-group btn-group-toggle" data-toggle="buttons">
             <label class="btn btn-outline-secondary" type="radio" name="options" id="delete_button" autocomplete="off" checked> Delete </label>
             <label class="btn btn-primary" type="radio" name="options" id="annotate_button" autocomplete="off"> Annotate </label>
         </span>
@@ -127,7 +127,7 @@
     var anchorX, anchorY, dragged, dragStart, dragX, dragY;
     var correctX, correctY, mouseX, mouseY;
     var child, parent, canvas, ctx, img;
-    var annotations = new Array();
+    var annotations;
     var dragOffsetX = 0;
     var dragOffsetY = 0;
     var scalingOffsetX = 0;
@@ -227,6 +227,11 @@
         ctx = canvas.getContext("2d");
         img = document.getElementById("pic");
         modeButton = document.getElementById("mode_button");
+        
+        annotations = "${annotations}";
+        if (annotations == ("$" + "{annotations}")){
+            annotations = [];
+        }
 
         var mode_data = "${annotation_mode}";
         if (mode_data == ("$" + "{annotation_mode}")) // running in local demo mode
