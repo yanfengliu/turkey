@@ -98,7 +98,7 @@
     <p id="buttons">
         <input class="btn btn-info fixed_width" id="mode_button" type="button" value = "Dot Mode" />
         <span id="delete_flip", class="btn-group btn-group-toggle" data-toggle="buttons">
-            <label class="btn btn-outline-secondary" type="radio" name="options" id="delete_button" autocomplete="off" checked> Delete </label>
+            <label class="btn btn-outline-secondary disabled" type="radio" name="options" id="delete_button" autocomplete="off" checked> Delete </label>
             <label class="btn btn-primary" type="radio" name="options" id="annotate_button" autocomplete="off"> Annotate </label>
         </span>
         <input class="btn btn-warning" id="undo_button" type="button" value = "Undo" />
@@ -144,7 +144,7 @@
     var translateTransform_raw = [0, 0];
     var delete_mode = false;
     var delete_idx = -1;
-    var trashcan = new Array();;
+    var trashcan = new Array();
 
     var currentLink = { 'class': [], 'mode': 'link', 'data': [] };
     var currentPolygon = { 'class': [], 'mode': 'polygon', 'data': [] };
@@ -192,7 +192,7 @@
         correctY = Math.round(correctY);
     }
 
-    function get_dist(pair_a, pair_b) {
+    function getDist(pair_a, pair_b) {
         var distance = Math.sqrt(Math.pow((pair_a[0] - pair_b[0]), 2) + Math.pow((pair_a[1] - pair_b[1]), 2));
         return distance;
     }
@@ -220,6 +220,17 @@
         return inside;
     };
 
+    var annotationsChanged = function()
+    {
+        if(annotations.length == 0)
+        {
+            $("#delete_button").addClass("disabled");
+        } else {
+            
+            $("#delete_button").removeClass("disabled");
+        }
+    }
+
     var start = function () {
         parent = document.getElementById("parent");
         child = document.getElementById("child");
@@ -233,6 +244,17 @@
             annotations = [];
         }
 
+        annotations.push = function(obj) {
+            Array.prototype.push.call(annotations, obj);
+            annotationsChanged();
+        }
+
+        annotations.splice = function(idx, numElements) {
+            Array.prototype.splice.call(annotations, idx, numElements);
+            annotationsChanged();
+        }
+        
+
         var mode_data = "${annotation_mode}";
         if (mode_data == ("$" + "{annotation_mode}")) // running in local demo mode
         {
@@ -240,6 +262,8 @@
         }
         modes = mode_data.split('-');
         mode = modes[0];
+
+        canvas.style.cursor = "crosshair";
 
         // generate select list options
         classSelection = document.getElementById("class");
@@ -283,10 +307,10 @@
             toggleMode();
         });
         document.getElementById("delete_button").addEventListener("click", function (e) {
-            set_delete();
+            setDeleteMode(true);
         });
         document.getElementById("annotate_button").addEventListener("click", function (e) {
-            set_annotate();
+            setDeleteMode(false);
         });
         document.getElementById("submitButton").disabled = false;
         document.getElementById("buttons").appendChild(document.getElementById("submitButton"));
@@ -310,13 +334,14 @@
             timeDownUp = new Date().getTime();
             getCorrectCoords(evt);
             if (!dragged) {
-                if (delete_mode == true && delete_idx > -1) {
+                if (getDeleteMode() == true && delete_idx > -1) {
                     var ann_copy = deep_copy(annotations[delete_idx]);
                     trashcan.push(ann_copy);
                     annotations.splice(delete_idx, 1);
                     delete_idx = -1;
-                } else if (delete_mode == true && delete_idx == -1) {
-                    alert("No annotation to delete!");
+                    if(annotations.length == 0)
+                        // no more to delete, go back to annotate mode
+                        setDeleteMode(false);
                 } else {
                     switch (mode) {
                         case "dot": // dot mode
@@ -368,7 +393,7 @@
                         anchorX = evt.clientX;
                         anchorY = evt.clientY;
                     } else {
-                        if (delete_mode == true) {
+                        if (getDeleteMode() == true) {
                             getCorrectCoords(evt);
                             var min_dist = 1000000;
                             var dist;
@@ -377,7 +402,7 @@
                                 var corners = ann.data;
                                 switch (ann.mode) {
                                     case "dot":
-                                        dist = get_dist([correctX, correctY], corners);
+                                        dist = getDist([correctX, correctY], corners);
                                         if (dist < min_dist) {
                                             min_dist = dist;
                                             delete_idx = i;
@@ -385,7 +410,7 @@
                                         break;
                                     case "link":
                                         for (var j = 0; j < 2; j++) {
-                                            dist = get_dist([correctX, correctY], corners[j]);
+                                            dist = getDist([correctX, correctY], corners[j]);
                                             if (dist < min_dist) {
                                                 min_dist = dist;
                                                 delete_idx = i;
@@ -394,7 +419,7 @@
                                         break;
                                     case "polygon":
                                         for (var j = 1; j < corners.length; j++) {
-                                            dist = get_dist([correctX, correctY], corners[j]);
+                                            dist = getDist([correctX, correctY], corners[j]);
                                             if (dist < min_dist) {
                                                 min_dist = dist;
                                                 delete_idx = i;
@@ -423,29 +448,44 @@
             modeButton.value = 'Mode: ' + capitalize(mode);
         }
 
-        function toggle_delete () {
-            delete_mode = 1 - delete_mode;
-            $("#delete_button").toggleClass('btn-primary btn-outline-secondary');
-            $("#annotate_button").toggleClass('btn-outline-secondary btn-primary');
-            updateGraphics();
+        function toggleDelete () {
+            setDeleteMode(!getDeleteMode());
         }
 
-        function set_delete() {
-            if (delete_mode == false){
-                delete_mode = true;
-                $("#delete_button").toggleClass('btn-primary btn-outline-secondary');
-                $("#annotate_button").toggleClass('btn-outline-secondary btn-primary');
-                updateGraphics();
-            }
+        function getDeleteMode()
+        {
+            return delete_mode;
         }
 
-        function set_annotate() {
-            if (delete_mode == true){
-                delete_mode = false;
-                $("#delete_button").toggleClass('btn-primary btn-outline-secondary');
-                $("#annotate_button").toggleClass('btn-outline-secondary btn-primary');
+        function setDeleteMode(deleteMode) {
+            if( deleteMode == true && $("#delete_button").hasClass("disabled"))
+            {
+                console.log("can't change state because it's disabled!");
+                return;
+            }
+                
+
+            delete_mode = deleteMode;
+            if (delete_mode == false) {
+                // annotate mode
+                canvas.style.cursor = "crosshair";
+                $("#delete_button").removeClass('btn-primary');
+                $("#delete_button").addClass('btn-outline-secondary');
+
+                $("#annotate_button").removeClass('btn-outline-secondary');
+                $("#annotate_button").addClass('btn-primary');
+                updateGraphics();
+            } else {
+                // delete mode
+                canvas.style.cursor = "pointer";
+                $("#annotate_button").removeClass('btn-primary');
+                $("#annotate_button").addClass('btn-outline-secondary');
+
+                $("#delete_button").removeClass('btn-outline-secondary');
+                $("#delete_button").addClass('btn-primary');
                 updateGraphics();
             }
+
         }
 
         function reset() {
@@ -481,13 +521,16 @@
             return classSelection[classSelection.selectedIndex].innerHTML;
         }
 
+        /**
+        *   Redraw all annotations
+        */
         function updateGraphics() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (var i = 0; i < annotations.length; i++) {
                 var ann = annotations[i];
                 var corners = ann.data;
                 var r, g, b;
-                if (delete_mode == true && delete_idx == i) {
+                if (getDeleteMode() == true && delete_idx == i) {
                     r = g = b = 0.5;
                 } else {
                     var color = colors[ann.class];
@@ -577,8 +620,9 @@
             }
         }
 
+        // depending on mode, either undo deletion or undo annotation
         function undo() {
-            if (delete_mode == true){
+            if (getDeleteMode() == true){
                 if (trashcan.length > 0) {
                     annotations.push(trashcan.pop());
                 }
@@ -618,7 +662,7 @@
 
             // Press D for "Delete"
             if ((evt.key == 'd')) {
-                toggle_delete();
+                toggleDelete();
             }
 
             // Press C for "Close Polygon"
