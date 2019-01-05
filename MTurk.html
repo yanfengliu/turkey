@@ -87,9 +87,10 @@
             <li><strong>Polygon mode</strong> draws the segmentation mask of the object.</li>
         </ul>
         <li>The <strong>Mode toggle</strong> button indicates the current mode</li>
-        <li>Click <strong>Delete/Annotate</strong> flip switch or press <strong>D</strong> to toggle between deleting and annotating.</li>
         <li>Press <strong>CTRL+Z</strong> or click the <strong>Undo</strong> button to undo last deletion/annotation.</li>
         <li>Press <strong>C</strong> to close polygon in polygon mode.</li>
+        <li>Click <strong>Delete/Annotate</strong> flip switch or press <strong>D</strong> to toggle between deleting and annotating.</li>
+        <li>Click the <strong>Undo</strong> button to undo your last action.</li>
         <li>Click the <strong>Reset</strong> button to clear all annotations.</li>
         <li>Click the <strong>Reposition</strong> button to center the image and reset zoom.</li>
         <li>Click the <strong>Submit</strong> button to finish current task.</li>
@@ -101,8 +102,8 @@
             <label class="btn btn-outline-secondary disabled" type="radio" name="options" id="delete_button" autocomplete="off" checked> Delete </label>
             <label class="btn btn-primary" type="radio" name="options" id="annotate_button" autocomplete="off"> Annotate </label>
         </span>
-        <input class="btn btn-warning" id="undo_button" type="button" value = "Undo" />
-        <input class="btn btn-warning" id="reset_button" type="button" value = "Reset" />
+        <input class="btn btn-secondary" id="undo_button" type="button" value = "Undo" />
+        <input class="btn btn-danger" id="reset_button" type="button" value = "Reset" />
         <input class="btn btn-warning" id="reposition_button" type="button" value = "Reposition" />
     </p>
 
@@ -127,7 +128,7 @@
     var anchorX, anchorY, dragged, dragStart, dragX, dragY;
     var correctX, correctY, mouseX, mouseY;
     var child, parent, canvas, ctx, img;
-    var annotations;
+    var annotations, modes, classSelection;
     var dragOffsetX = 0;
     var dragOffsetY = 0;
     var scalingOffsetX = 0;
@@ -135,9 +136,7 @@
     var oldScale = newScale = 1.0;
     var firstPoint = true;
     var mode = "";
-    var modes;
     var modeNum = 0;
-    var classSelection;
     var dotSize = 4;
     var scaleTransform = 1;
     var translateTransform = [0, 0];
@@ -148,12 +147,6 @@
 
     var currentLink = { 'class': [], 'mode': 'link', 'data': [] };
     var currentPolygon = { 'class': [], 'mode': 'polygon', 'data': [] };
-
-    $('#instruction').slideUp(1500);
-
-    $('#title').click(function () {
-        $('#instruction').slideToggle();
-    });
 
     var handleScroll = function (evt) {
         getCorrectCoords(evt);
@@ -184,12 +177,49 @@
     }
 
     function getCorrectCoords(evt) {
-        mouseX = evt.clientX - parent.offsetLeft;
+        mouseX = evt.clientX - parent.offsetLeft + parent.scrollLeft + window.pageXOffset;
         mouseY = evt.clientY - parent.offsetTop + parent.scrollTop + window.pageYOffset;
         correctX = (mouseX + scalingOffsetX - translateTransform_raw[0]) / newScale;
         correctY = (mouseY + scalingOffsetY - translateTransform_raw[1]) / newScale;
         correctX = Math.round(correctX);
         correctY = Math.round(correctY);
+    }
+
+    function getDeleteIdx(){
+        var deleteIdx = -1;
+        var min_dist = 1000000;
+        var dist;
+        for (var i = 0; i < annotations.length; i++) {
+            var ann = annotations[i];
+            var corners = ann.data;
+            switch (ann.mode) {
+                case "dot":
+                    dist = getDist([correctX, correctY], corners);
+                    if (dist < min_dist) {
+                        min_dist = dist;
+                        deleteIdx = i;
+                    }
+                    break;
+                case "link":
+                    for (var j = 0; j < 2; j++) {
+                        dist = getDist([correctX, correctY], corners[j]);
+                        if (dist < min_dist) {
+                            min_dist = dist;
+                            deleteIdx = i;
+                        }
+                    }
+                    break;
+                case "polygon":
+                    for (var j = 1; j < corners.length; j++) {
+                        dist = getDist([correctX, correctY], corners[j]);
+                        if (dist < min_dist) {
+                            min_dist = dist;
+                            deleteIdx = i;
+                        }
+                    }
+            }
+        }
+        return deleteIdx
     }
 
     function getDist(pair_a, pair_b) {
@@ -201,32 +231,12 @@
         return jQuery.extend(true, {}, obj);
     }
 
-    function inside(point, vs) {
-        // ray-casting algorithm based on
-        // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
-
-        var x = point[0], y = point[1];
-
-        var inside = false;
-        for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-            var xi = vs[i][0], yi = vs[i][1];
-            var xj = vs[j][0], yj = vs[j][1];
-
-            var intersect = ((yi > y) != (yj > y))
-                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-            if (intersect) inside = !inside;
-        }
-
-        return inside;
-    };
-
     var annotationsChanged = function()
     {
         if(annotations.length == 0)
         {
             $("#delete_button").addClass("disabled");
         } else {
-            
             $("#delete_button").removeClass("disabled");
         }
     }
@@ -239,6 +249,12 @@
         img = document.getElementById("pic");
         modeButton = document.getElementById("mode_button");
         
+        $('#instruction').slideUp(1500);
+
+        $('#title').click(function () {
+            $('#instruction').slideToggle();
+        });
+
         annotations = "${annotations}";
         if (annotations == ("$" + "{annotations}")){
             annotations = [];
@@ -253,7 +269,6 @@
             Array.prototype.splice.call(annotations, idx, numElements);
             annotationsChanged();
         }
-        
 
         var mode_data = "${annotation_mode}";
         if (mode_data == ("$" + "{annotation_mode}")) // running in local demo mode
@@ -262,6 +277,7 @@
         }
         modes = mode_data.split('-');
         mode = modes[0];
+
 
         canvas.style.cursor = "crosshair";
 
@@ -320,6 +336,11 @@
 
         var timeDownUp = null;
 
+        canvas.addEventListener('mouseout', function(evt) {
+            dragStart = false;
+            dragged = false; 
+        });
+
         canvas.addEventListener('mousedown', function (evt) {
             timeDownUp = new Date().getTime();
             // mouse down function go here
@@ -329,19 +350,21 @@
             dragStart = true;
         });
 
-
         canvas.addEventListener('mouseup', function (evt) {
             timeDownUp = new Date().getTime();
             getCorrectCoords(evt);
             if (!dragged) {
-                if (getDeleteMode() == true && delete_idx > -1) {
-                    var ann_copy = deep_copy(annotations[delete_idx]);
-                    trashcan.push(ann_copy);
-                    annotations.splice(delete_idx, 1);
-                    delete_idx = -1;
-                    if(annotations.length == 0)
-                        // no more to delete, go back to annotate mode
-                        setDeleteMode(false);
+                if (getDeleteMode() == true) {
+                    if (delete_idx > -1) {
+                        var ann_copy = deep_copy(annotations[delete_idx]);
+                        trashcan.push(ann_copy);
+                        annotations.splice(delete_idx, 1);
+                        getCorrectCoords(evt);
+                        delete_idx = getDeleteIdx();
+                        if(annotations.length == 0)
+                            // no more to delete, go back to annotate mode
+                            setDeleteMode(false);
+                    }
                 } else {
                     switch (mode) {
                         case "dot": // dot mode
@@ -395,38 +418,7 @@
                     } else {
                         if (getDeleteMode() == true) {
                             getCorrectCoords(evt);
-                            var min_dist = 1000000;
-                            var dist;
-                            for (var i = 0; i < annotations.length; i++) {
-                                var ann = annotations[i];
-                                var corners = ann.data;
-                                switch (ann.mode) {
-                                    case "dot":
-                                        dist = getDist([correctX, correctY], corners);
-                                        if (dist < min_dist) {
-                                            min_dist = dist;
-                                            delete_idx = i;
-                                        }
-                                        break;
-                                    case "link":
-                                        for (var j = 0; j < 2; j++) {
-                                            dist = getDist([correctX, correctY], corners[j]);
-                                            if (dist < min_dist) {
-                                                min_dist = dist;
-                                                delete_idx = i;
-                                            }
-                                        }
-                                        break;
-                                    case "polygon":
-                                        for (var j = 1; j < corners.length; j++) {
-                                            dist = getDist([correctX, correctY], corners[j]);
-                                            if (dist < min_dist) {
-                                                min_dist = dist;
-                                                delete_idx = i;
-                                            }
-                                        }
-                                }
-                            }
+                            delete_idx = getDeleteIdx();
                             updateGraphics();
                         }
                     }
@@ -446,6 +438,9 @@
 
             mode = modes[modeNum];
             modeButton.value = 'Mode: ' + capitalize(mode);
+            if (mode == "polygon"){
+                $("#mode_button").popover('toggle');
+            }
         }
 
         function toggleDelete () {
@@ -460,11 +455,9 @@
         function setDeleteMode(deleteMode) {
             if( deleteMode == true && $("#delete_button").hasClass("disabled"))
             {
-                console.log("can't change state because it's disabled!");
                 return;
             }
-                
-
+            
             delete_mode = deleteMode;
             if (delete_mode == false) {
                 // annotate mode
@@ -477,6 +470,7 @@
                 updateGraphics();
             } else {
                 // delete mode
+                delete_idx = getDeleteIdx();
                 canvas.style.cursor = "pointer";
                 $("#annotate_button").removeClass('btn-primary');
                 $("#annotate_button").addClass('btn-outline-secondary');
