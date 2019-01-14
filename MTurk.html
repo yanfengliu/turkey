@@ -90,7 +90,7 @@
         <li>Press <strong>CTRL+Z</strong> or click the <strong>Undo</strong> button to undo last deletion/annotation.</li>
         <li>Press <strong>C</strong> to close polygon in polygon mode.</li>
         <li>Click <strong>Delete/Annotate</strong> flip switch or press <strong>D</strong> to toggle between deleting and annotating.</li>
-        <li>Click the <strong>Undo</strong> button to undo your last action.</li>
+        <li>Click the <strong>Undo</strong> button to undo your last deletion/annotation depending on your current mode.</li>
         <li>Click the <strong>Reset</strong> button to clear all annotations.</li>
         <li>Click the <strong>Reposition</strong> button to center the image and reset zoom.</li>
         <li>Click the <strong>Submit</strong> button to finish current task.</li>
@@ -435,7 +435,7 @@
             if (modeNum >= modes.length) {
                 modeNum = 0;
             }
-
+            setDeleteMode(false);
             mode = modes[modeNum];
             modeButton.value = 'Mode: ' + capitalize(mode);
             if (mode == "polygon"){
