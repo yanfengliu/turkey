@@ -32,6 +32,7 @@
 <style>
     #parent {
         width: 1000px; 
+        height: auto;
         overflow: hidden;
         position: relative;
         background:#f5f5f5;
@@ -144,6 +145,7 @@
     var delete_mode = false;
     var delete_idx = -1;
     var trashcan = new Array();
+    var colors = {};
 
     var currentLink = { 'class': [], 'mode': 'link', 'data': [] };
     var currentPolygon = { 'class': [], 'mode': 'polygon', 'data': [] };
@@ -255,7 +257,7 @@
             $('#instruction').slideToggle();
         });
 
-        annotations = "${annotations}";
+        annotations = JSON.parse("${annotations}");
         if (annotations == ("$" + "{annotations}")){
             annotations = [];
         }
@@ -278,7 +280,6 @@
         modes = mode_data.split('-');
         mode = modes[0];
 
-
         canvas.style.cursor = "crosshair";
 
         // generate select list options
@@ -291,7 +292,6 @@
         classes = classes_data.split('-');
 
         // populate list items and generate unique colors based on string hash
-        var colors = {};
         classes.forEach((theClass) => {
             var option = document.createElement("option");
             var hue = Math.abs(theClass.hashCode() % 360) / 360;
@@ -438,9 +438,6 @@
             setDeleteMode(false);
             mode = modes[modeNum];
             modeButton.value = 'Mode: ' + capitalize(mode);
-            if (mode == "polygon"){
-                $("#mode_button").popover('toggle');
-            }
         }
 
         function toggleDelete () {
