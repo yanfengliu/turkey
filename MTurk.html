@@ -698,6 +698,7 @@
     }
 
     function HSVtoRGB(h, s, v) {
+        // Borrowed from https://stackoverflow.com/a/17243070/4970438
         var r, g, b, i, f, p, q, t;
         if (arguments.length === 1) {
             s = h.s, v = h.v, h = h.h;
