@@ -1,4 +1,3 @@
-![demo_pic](https://i.imgur.com/EVfNXxf.png)
 ![demo_pic](https://i.imgur.com/oHpZTIu.jpg)
 
 # **turkey**: an Amazon Mechanical Turk turn-key segment tool. 
