@@ -257,9 +257,11 @@
             $('#instruction').slideToggle();
         });
 
-        annotations = JSON.parse("${annotations}");
-        if (annotations == ("$" + "{annotations}")){
+        annotations_str = "${annotations}"
+        if (annotations_str == ("$" + "{annotations}")){
             annotations = [];
+        } else {
+            annotations = JSON.parse(annotations_str);
         }
 
         annotations.push = function(obj) {
