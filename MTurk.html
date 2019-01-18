@@ -401,33 +401,35 @@
 
 
         canvas.addEventListener('mousemove', function (evt) {
-            var timeMove = new Date().getTime();
-            timeDownUp += 30;
-            if (timeMove > timeDownUp) {
-                if (event.which === 1) {
-                    if (dragStart) {
-                        dragged = true;
-                        dragX = evt.clientX - anchorX;
-                        dragY = evt.clientY - anchorY;
-                        translateTransform_raw = [translateTransform_raw[0] + dragX, translateTransform_raw[1] + dragY];
-                        translateTransform[0] = translateTransform_raw[0] / newScale;
-                        translateTransform[1] = translateTransform_raw[1] / newScale;
-                        updateTransform();
-                        dragOffsetX += dragX;
-                        dragOffsetY += dragY;
-                        anchorX = evt.clientX;
-                        anchorY = evt.clientY;
-                    } else {
-                        if (getDeleteMode() == true) {
-                            getCorrectCoords(evt);
-                            delete_idx = getDeleteIdx();
-                            updateGraphics();
+            if (getDeleteMode() == true) {
+                getCorrectCoords(evt);
+                delete_idx = getDeleteIdx();
+                updateGraphics();
+            } else {
+                var timeMove = new Date().getTime();
+                // timeDownUp += 30;
+                if (timeMove > timeDownUp) {
+                    if (event.which === 1) {
+                        if (dragStart) {
+                            console.log("drag");
+                            dragged = true;
+                            dragX = evt.clientX - anchorX;
+                            dragY = evt.clientY - anchorY;
+                            translateTransform_raw = [translateTransform_raw[0] + dragX, translateTransform_raw[1] + dragY];
+                            translateTransform[0] = translateTransform_raw[0] / newScale;
+                            translateTransform[1] = translateTransform_raw[1] / newScale;
+                            updateTransform();
+                            dragOffsetX += dragX;
+                            dragOffsetY += dragY;
+                            anchorX = evt.clientX;
+                            anchorY = evt.clientY;
                         }
                     }
+                } else {
+                    timeDownUp = null;
                 }
-            } else {
-                timeDownUp = null;
             }
+            
         });
 
 
