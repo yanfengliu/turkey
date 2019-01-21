@@ -4,7 +4,7 @@
 # **turkey**: an Amazon Mechanical Turk turn-key segment tool. 
 
 Authors: 
-* Yanfeng Liu (yanfengliux@gmail.com)
+* Yanfeng Liu (yanfeng.liu@unl.edu)
 * Jay Carlson (jcarlson@unl.edu)
 
 **turkey** lets you easily create a web UI on Amazon Mechanical Turk to crowd-source image annotation data. Its main functions include:
