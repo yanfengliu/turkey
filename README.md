@@ -25,7 +25,7 @@ https://i.imgur.com/2yOma1u.jpg, polygon, cat-person-sky-food, []
 Here, we allow the worker to use **Polygon**, **Link** and **Dot** modes for annotating the first image, but only the **Polygon** mode for the second. The class labels that the user can choose from are **house**, **person**, **car**, and **dog**. The first item in the list will be the default option. You can also import previous annotations by putting the correctly formatted json string into column "annotations".
 
 ## Testing without Turk
-You can test the code before deploying it on MTurk by opening `localDemo.html` in your browser. This file is a lightweight wrapper that will load `MTurk.html` off GitHub, passing a sample image to it in the process.
+You can test the code before deploying it on MTurk by opening `localDemo.html` in your browser. This file is a lightweight wrapper that will load `MTurk.html` off GitHub, passing a sample image to it in the process. If you don't see anything here, make sure to start Chrome with the `--allow-file-access-from-files` flag (or the equivalent configuration for the browser of your choice). This will allow this wrapper page to load MTurk.html.
 
 ## Unpacking data from .csv file
 After the users annotate the images, Amazon Mechanical Turk provides a `.csv` file ready for downloading. `getResults.m` contains a sample MATLAB code that automatically reads in data from the file and displays the annotations. 
