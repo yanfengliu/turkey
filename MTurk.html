@@ -108,8 +108,6 @@
         <input class="btn btn-warning" id="reposition_button" type="button" value = "Reposition" />
     </p>
 
-    
-    
     <div>
         <!-- Coordinates input from user -->
         <input id="coordinates" name="coordinates" type="hidden" />
@@ -125,16 +123,17 @@
 </div>
 
 <script id="turkey" type="text/javascript">
-    var translateX, translateY, delta, scaleRatio, scaleDiff;
-    var anchorX, anchorY, dragged, dragStart, dragX, dragY;
-    var correctX, correctY, mouseX, mouseY;
+    var translateX, translateY, correctX, correctY
+    var anchorX, anchorY, dragX, dragY, mouseX, mouseY;
+    var dragged, dragStart, delta, scaleRatio, scaleDiff;
     var child, parent, canvas, ctx, img;
     var annotations, modes, classSelection;
     var dragOffsetX = 0;
     var dragOffsetY = 0;
     var scalingOffsetX = 0;
     var scalingOffsetY = 0;
-    var oldScale = newScale = 1.0;
+    var oldScale = 1.0;
+    var newScale = 1.0;
     var firstPoint = true;
     var mode = "";
     var modeNum = 0;
@@ -146,102 +145,10 @@
     var delete_idx = -1;
     var trashcan = new Array();
     var colors = {};
+    var timeDownUp = null;
 
     var currentLink = { 'class': [], 'mode': 'link', 'data': [] };
     var currentPolygon = { 'class': [], 'mode': 'polygon', 'data': [] };
-
-    var handleScroll = function (evt) {
-        getCorrectCoords(evt);
-        delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
-
-        newScale += delta / 10;
-        newScale = Math.max(newScale, 1.0);
-        newScale = Math.min(newScale, 5.0);
-        scaleRatio = newScale / oldScale;
-        scaleDiff = newScale - oldScale;
-        oldScale = scaleTransform = newScale;
-
-        scalingOffsetX = (newScale - 1) * parent.offsetWidth / 2;
-        scalingOffsetY = (newScale - 1) * parent.offsetHeight / 2;
-
-        translateTransform_raw[0] -= (correctX - parent.offsetWidth / 2) * scaleDiff;
-        translateTransform_raw[1] -= (correctY - parent.offsetHeight / 2) * scaleDiff;
-
-        translateTransform[0] = translateTransform_raw[0] / newScale;
-        translateTransform[1] = translateTransform_raw[1] / newScale;
-        updateTransform();
-    };
-
-    function updateTransform() {
-        child.style.transform = "";
-        child.style.transform += 'scale(' + scaleTransform + ', ' + scaleTransform + ')';
-        child.style.transform += 'translate(' + translateTransform[0] + 'px, ' + translateTransform[1] + 'px)';
-    }
-
-    function getCorrectCoords(evt) {
-        mouseX = evt.clientX - parent.offsetLeft + parent.scrollLeft + window.pageXOffset;
-        mouseY = evt.clientY - parent.offsetTop + parent.scrollTop + window.pageYOffset;
-        correctX = (mouseX + scalingOffsetX - translateTransform_raw[0]) / newScale;
-        correctY = (mouseY + scalingOffsetY - translateTransform_raw[1]) / newScale;
-        correctX = Math.round(correctX);
-        correctY = Math.round(correctY);
-    }
-
-    function getDeleteIdx(){
-        var deleteIdx = -1;
-        var min_dist = 1000000;
-        var dist;
-        for (var i = 0; i < annotations.length; i++) {
-            var ann = annotations[i];
-            var corners = ann.data;
-            switch (ann.mode) {
-                case "dot":
-                    dist = getDist([correctX, correctY], corners);
-                    if (dist < min_dist) {
-                        min_dist = dist;
-                        deleteIdx = i;
-                    }
-                    break;
-                case "link":
-                    for (var j = 0; j < 2; j++) {
-                        dist = getDist([correctX, correctY], corners[j]);
-                        if (dist < min_dist) {
-                            min_dist = dist;
-                            deleteIdx = i;
-                        }
-                    }
-                    break;
-                case "polygon":
-                    for (var j = 1; j < corners.length; j++) {
-                        dist = getDist([correctX, correctY], corners[j]);
-                        if (dist < min_dist) {
-                            min_dist = dist;
-                            deleteIdx = i;
-                        }
-                    }
-            }
-        }
-        return deleteIdx
-    }
-
-    function getDist(pair_a, pair_b) {
-        var distance = Math.sqrt(Math.pow((pair_a[0] - pair_b[0]), 2) + Math.pow((pair_a[1] - pair_b[1]), 2));
-        return distance;
-    }
-
-    function deep_copy(obj){
-        return jQuery.extend(true, {}, obj);
-    }
-
-    var annotationsChanged = function()
-    {
-        if(annotations.length == 0)
-        {
-            $("#delete_button").addClass("disabled");
-        } else {
-            $("#delete_button").removeClass("disabled");
-        }
-    }
 
     var start = function () {
         parent = document.getElementById("parent");
@@ -250,6 +157,10 @@
         ctx = canvas.getContext("2d");
         img = document.getElementById("pic");
         modeButton = document.getElementById("mode_button");
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+        canvas.style.cursor = "crosshair";
         
         $('#instruction').slideUp(1500);
 
@@ -281,8 +192,7 @@
         }
         modes = mode_data.split('-');
         mode = modes[0];
-
-        canvas.style.cursor = "crosshair";
+        modeButton.value = 'Mode: ' + capitalize(mode);
 
         // generate select list options
         classSelection = document.getElementById("class");
@@ -305,11 +215,6 @@
 
         classSelection.size = Math.min(10, classes.length);
         classSelection.selectedIndex = 0;
-
-        modeButton.value = 'Mode: ' + capitalize(mode);
-
-        canvas.width = img.width;
-        canvas.height = img.height;
 
         //initialize buttons
         document.getElementById("reset_button").addEventListener("click", function (e) {
@@ -335,8 +240,6 @@
 
         child.addEventListener('DOMMouseScroll', handleScroll, false);
         child.addEventListener('mousewheel', handleScroll, false);
-
-        var timeDownUp = null;
 
         canvas.addEventListener('mouseout', function(evt) {
             dragStart = false;
@@ -399,7 +302,6 @@
             }
         });
 
-
         canvas.addEventListener('mousemove', function (evt) {
             if (getDeleteMode() == true) {
                 getCorrectCoords(evt);
@@ -430,7 +332,6 @@
             }
             
         });
-
 
         function toggleMode() {
             // clearAnnotations();
@@ -515,9 +416,7 @@
             return classSelection[classSelection.selectedIndex].innerHTML;
         }
 
-        /**
-        *   Redraw all annotations
-        */
+        // Redraw all annotations
         function updateGraphics() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (var i = 0; i < annotations.length; i++) {
@@ -681,6 +580,99 @@
 
     window.onload = function () {
         start();
+    }
+
+    var handleScroll = function (evt) {
+        getCorrectCoords(evt);
+        delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
+
+        newScale += delta / 10;
+        newScale = Math.max(newScale, 1.0);
+        newScale = Math.min(newScale, 5.0);
+        scaleRatio = newScale / oldScale;
+        scaleDiff = newScale - oldScale;
+        oldScale = scaleTransform = newScale;
+
+        scalingOffsetX = (newScale - 1) * parent.offsetWidth / 2;
+        scalingOffsetY = (newScale - 1) * parent.offsetHeight / 2;
+
+        translateTransform_raw[0] -= (correctX - parent.offsetWidth / 2) * scaleDiff;
+        translateTransform_raw[1] -= (correctY - parent.offsetHeight / 2) * scaleDiff;
+
+        translateTransform[0] = translateTransform_raw[0] / newScale;
+        translateTransform[1] = translateTransform_raw[1] / newScale;
+        updateTransform();
+    };
+
+    function updateTransform() {
+        child.style.transform = "";
+        child.style.transform += 'scale(' + scaleTransform + ', ' + scaleTransform + ')';
+        child.style.transform += 'translate(' + translateTransform[0] + 'px, ' + translateTransform[1] + 'px)';
+    }
+
+    function getCorrectCoords(evt) {
+        mouseX = evt.clientX - parent.offsetLeft + parent.scrollLeft + window.pageXOffset;
+        mouseY = evt.clientY - parent.offsetTop + parent.scrollTop + window.pageYOffset;
+        correctX = (mouseX + scalingOffsetX - translateTransform_raw[0]) / newScale;
+        correctY = (mouseY + scalingOffsetY - translateTransform_raw[1]) / newScale;
+        correctX = Math.round(correctX);
+        correctY = Math.round(correctY);
+    }
+
+    function getDeleteIdx(){
+        var deleteIdx = -1;
+        var min_dist = 1000000;
+        var dist;
+        for (var i = 0; i < annotations.length; i++) {
+            var ann = annotations[i];
+            var corners = ann.data;
+            switch (ann.mode) {
+                case "dot":
+                    dist = getDist([correctX, correctY], corners);
+                    if (dist < min_dist) {
+                        min_dist = dist;
+                        deleteIdx = i;
+                    }
+                    break;
+                case "link":
+                    for (var j = 0; j < 2; j++) {
+                        dist = getDist([correctX, correctY], corners[j]);
+                        if (dist < min_dist) {
+                            min_dist = dist;
+                            deleteIdx = i;
+                        }
+                    }
+                    break;
+                case "polygon":
+                    for (var j = 1; j < corners.length; j++) {
+                        dist = getDist([correctX, correctY], corners[j]);
+                        if (dist < min_dist) {
+                            min_dist = dist;
+                            deleteIdx = i;
+                        }
+                    }
+            }
+        }
+        return deleteIdx
+    }
+
+    function getDist(pair_a, pair_b) {
+        var distance = Math.sqrt(Math.pow((pair_a[0] - pair_b[0]), 2) + Math.pow((pair_a[1] - pair_b[1]), 2));
+        return distance;
+    }
+
+    function deep_copy(obj){
+        return jQuery.extend(true, {}, obj);
+    }
+
+    var annotationsChanged = function()
+    {
+        if(annotations.length == 0)
+        {
+            $("#delete_button").addClass("disabled");
+        } else {
+            $("#delete_button").removeClass("disabled");
+        }
     }
 
     function capitalize(string) {
