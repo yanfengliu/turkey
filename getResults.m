@@ -44,7 +44,7 @@ function display_ui(figure_handle)
         'BackgroundColor',[255, 177, 68]/255,'FontSize',14,'Callback',@finish_callback);
 end
 
-function next_callback(hObject, eventdata, handles)
+function next_callback(hObject, ~, ~)
     % get data from figure handle
     data = guidata(hObject);
     T = data.result_table;
@@ -54,7 +54,7 @@ function next_callback(hObject, eventdata, handles)
     guidata(gcf, struct('row', row, 'result_table', T));
 end
 
-function previous_callback(hObject, eventdata, handles)
+function previous_callback(hObject, ~, ~)
     data = guidata(hObject);
     T = data.result_table;
     row = data.row;
@@ -63,7 +63,7 @@ function previous_callback(hObject, eventdata, handles)
     guidata(gcf, struct('row', row, 'result_table', T));
 end
 
-function approve_callback(hObject, eventdata, handles)
+function approve_callback(hObject, ~, ~)
     global accept_idx; 
     
     data = guidata(hObject);
@@ -75,7 +75,7 @@ function approve_callback(hObject, eventdata, handles)
     guidata(hObject, struct('row', row, 'result_table', T));
 end
 
-function reject_callback(hObject, eventdata, handles)
+function reject_callback(hObject, ~, ~)
     global accept_idx; 
     
     data = guidata(hObject);
@@ -87,16 +87,15 @@ function reject_callback(hObject, eventdata, handles)
     guidata(hObject, struct('row', row, 'result_table', T));
 end
 
-function finish_callback(hObject, eventdata, handles)
+function finish_callback(hObject, ~, ~)
     data = guidata(hObject);
     T = data.result_table;
-    result_to_csv(T, 'review.csv');
-    save_mask_and_img(T);
+    folder = export_results(T);
     close gcf;
     fprintf("Annotation review finished. To change decisions, run this program again\n\n");
-    fprintf("Masks saved to %s\n", strcat(pwd, '\mask\'));
-    fprintf("Images saved to %s\n", strcat(pwd, '\image\'));
-    fprintf("Review CSV exported to %s\n", strcat(pwd, '\review.csv'));
+    fprintf("Masks saved to %s\n", strcat(folder, '\mask\'));
+    fprintf("Images saved to %s\n", strcat(folder, '\image\'));
+    fprintf("Review CSV exported to %s\n", strcat(folder, '\review.csv'));
 end
 
 function show_ann(T, row)
@@ -169,7 +168,14 @@ function [val] = myHash(input_string)
    val = str2double(whole_hex_string);
 end
 
-function result_to_csv(T, filename)
+function save_path = export_results(T)
+    save_path = strcat(pwd, '\', datestr(datenum(datetime('now')), 'dd-mmm-yyyy_HH-MM-SS'));
+    mkdir(save_path);
+    result_to_csv(T, strcat(save_path, '\review.csv'));
+    save_mask_and_img(T, save_path);
+end
+
+function result_to_csv(T, file_path)
     column_names = ["HITId","HITTypeId","Title","Description","Keywords","Reward",...
         "CreationTime","MaxAssignments","RequesterAnnotation","AssignmentDurationInSeconds",...
         "AutoApprovalDelayInSeconds","Expiration","NumberOfSimilarHITs","LifetimeInSeconds",...
@@ -177,7 +183,7 @@ function result_to_csv(T, filename)
         "ApprovalTime","RejectionTime","RequesterFeedback","WorkTimeInSeconds","LifetimeApprovalRate",...
         "Last30DaysApprovalRate","Last7DaysApprovalRate","Input.img_url","Input.annotation_mode",...
         "Input.classes","Input.annotations","Answer.coordinates","Approve","Reject"];
-    fid = fopen(filename,'w');
+    fid = fopen(file_path,'w');
     format_string = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n";
     fprintf(fid,format_string,column_names);
     for i = 1:size(T, 1)
@@ -212,20 +218,16 @@ function b = escape_quote(a)
     end
 end
 
-function save_mask_and_img(T)
+function save_mask_and_img(T, save_path)
     global img_cache accept_idx
     
-    mask_folder = strcat(pwd, '\mask');
-    if exist(mask_folder, 'dir')
-        remove_content_from_folder(mask_folder);
-    else
+    mask_folder = strcat(save_path, '\mask');
+    if ~exist(mask_folder, 'dir')
         mkdir(mask_folder);
     end
     
-    img_folder = strcat(pwd, '\image');
-    if exist(img_folder, 'dir')
-        remove_content_from_folder(img_folder);
-    else
+    img_folder = strcat(save_path, '\image');
+    if ~exist(img_folder, 'dir')
         mkdir(img_folder);
     end
 
@@ -279,16 +281,5 @@ function save_mask_and_img(T)
                 end
             end
         end
-    end
-end
-
-function remove_content_from_folder(folder)
-    filePattern = fullfile(folder, '*.png');
-    theFiles = dir(filePattern);
-    for k = 1 : length(theFiles)
-      baseFileName = theFiles(k).name;
-      fullFileName = fullfile(folder, baseFileName);
-      fprintf(1, 'Deleting old content: %s\n', fullFileName);
-      delete(fullFileName);
     end
 end
