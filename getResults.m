@@ -93,6 +93,10 @@ function finish_callback(hObject, eventdata, handles)
     result_to_csv(T, 'review.csv');
     result_to_mask(T);
     close gcf;
+    fprintf("Annotation review finished. To change decisions, run this program again\n\n");
+    fprintf("Masks saved to %s\n", strcat(pwd, '\mask\'));
+    fprintf("Images saved to %s\n", strcat(pwd, '\image\'));
+    fprintf("Review CSV exported to %s\n", strcat(pwd, '\review.csv'));
 end
 
 function show_ann(T, row)
