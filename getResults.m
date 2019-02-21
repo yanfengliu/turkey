@@ -2,8 +2,9 @@ clear all;
 clc;
 close all;
 
-global img_cache;
+global img_cache accept_idx
 img_cache = {};
+accept_idx = [];
 
 % read table
 T = readtable('sample_result.csv','Delimiter',',','ReadVariableNames',false);
@@ -21,6 +22,7 @@ function display_ui(figure_handle)
     set(figure_handle, 'Units', 'Normalized', 'OuterPosition', [0 0 1 1]);
     set(figure_handle, 'Units', 'pixels');
     figure_size = get(figure_handle, 'position');
+    set(figure_handle, 'WindowState', 'maximized');
     figure_width = figure_size(3);
     zone_width = 0.2 * figure_width;
     button_width = 0.15 * figure_width;
@@ -62,20 +64,26 @@ function previous_callback(hObject, eventdata, handles)
 end
 
 function approve_callback(hObject, eventdata, handles)
+    global accept_idx; 
+    
     data = guidata(hObject);
     T = data.result_table;
     row = data.row;
     T(row, 32) = {'x'};
     T(row, 33) = {''};
+    accept_idx = [accept_idx, row];
     guidata(hObject, struct('row', row, 'result_table', T));
 end
 
 function reject_callback(hObject, eventdata, handles)
+    global accept_idx; 
+    
     data = guidata(hObject);
     T = data.result_table;
     row = data.row;
     T(row, 32) = {''};
     T(row, 33) = {'rejected'};
+    accept_idx = accept_idx(accept_idx ~= row);
     guidata(hObject, struct('row', row, 'result_table', T));
 end
 
@@ -83,16 +91,19 @@ function finish_callback(hObject, eventdata, handles)
     data = guidata(hObject);
     T = data.result_table;
     result_to_csv(T, 'review.csv');
+    result_to_mask(T);
     close gcf;
 end
 
 function show_ann(T, row)
     global img_cache;
     
-    row = mod(row, size(T, 1)+1);
+    total = size(T, 1);
+    row = mod(row, total);
     if (row == 0)
-       row = 1; 
+       row = total; 
     end
+    
     % get class name, img url, and annotation JSON struct
     class_names = strjoin(cellstr(table2cell(T(row, 30))));
     class_names = split(class_names, '-');
@@ -191,5 +202,69 @@ function b = escape_quote(a)
     end
     if need_quotation == 1
        b = strcat('"', b, '"'); 
+    end
+end
+
+function result_to_mask(T)
+    global img_cache accept_idx
+    
+    mask_folder = strcat(pwd, '\mask');
+    if ~exist(mask_folder, 'dir')
+        mkdir(mask_folder);
+    end
+    
+    img_folder = strcat(pwd, '\image');
+    if ~exist(img_folder, 'dir')
+        mkdir(img_folder);
+    end
+
+    for k = 1:accept_idx
+        row = accept_idx(k);
+        
+        % get class name, img url, and annotation JSON struct
+        class_names = strjoin(cellstr(table2cell(T(row, 30))));
+        class_names = split(class_names, '-');
+        class_num = length(class_names);
+        ann = jsondecode(strjoin(cellstr(table2cell(T(row, 31)))));
+
+        % get accepted image from cache
+        img = img_cache{row};
+
+        % calculate the ratio between original image and the one displayed on Amazon MTurk
+        scale = 1000/size(img, 2);
+        img = imresize(img, scale);
+        imwrite(img, strcat(img_folder, '\', string(row), '.png'));
+        
+        % hash class names and generate repeatable class colors
+        colors = ones([class_num, 3]);
+        for i = 1:class_num
+           val = myHash(class_names{i}); 
+           rng(val);
+           hue = rand();
+           hsv = [hue, 0.73, 1];
+           colors(i, :) = hsv2rgb(hsv);
+        end
+
+        % display annotations as filled transparent polygons. Only supports polygons right now. 
+        % TODO: Add support for dots and links. 
+        for i = 1:size(ann, 1)
+            if (strcmp(ann(i).mode, 'polygon'))
+                coordinates = [];
+                for j = 1:size(ann(i).data, 1)
+                    coordinates = [coordinates, ann(i).data(j, :)];
+                end
+                class_idx = 0;
+                for j = 1:class_num
+                   if strcmp(ann(i).class, class_names(j))
+                      class_idx = j; 
+                   end
+                end
+                img = zeros(size(img));
+                mask = insertShape(img, 'FilledPolygon', coordinates, ...
+                    'Color', [255, 255, 255], 'Opacity', 1);
+                imwrite(mask, strcat(mask_folder, '\', 'row_', string(row), ...
+                    '_instance_', string(i), '_class_', string(class_idx), '.png'));
+            end
+        end
     end
 end
