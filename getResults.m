@@ -91,7 +91,7 @@ function finish_callback(hObject, eventdata, handles)
     data = guidata(hObject);
     T = data.result_table;
     result_to_csv(T, 'review.csv');
-    result_to_mask(T);
+    save_mask_and_img(T);
     close gcf;
     fprintf("Annotation review finished. To change decisions, run this program again\n\n");
     fprintf("Masks saved to %s\n", strcat(pwd, '\mask\'));
@@ -125,7 +125,8 @@ function show_ann(T, row)
     end
 
     % calculate the ratio between original image and the one displayed on Amazon MTurk
-    ratio = size(img, 2)/1000;
+    scale = 1000/size(img, 2);
+    img = imresize(img, scale);
     % hash class names and generate repeatable class colors
     colors = ones([class_num, 3]);
     for i = 1:class_num
@@ -142,7 +143,7 @@ function show_ann(T, row)
         if (strcmp(ann(i).mode, 'polygon'))
             coordinates = [];
             for j = 1:size(ann(i).data, 1)
-                coordinates = [coordinates, ratio*ann(i).data(j, :)];
+                coordinates = [coordinates, ann(i).data(j, :)];
             end
             class_idx = 0;
             for j = 1:class_num
@@ -150,7 +151,9 @@ function show_ann(T, row)
                   class_idx = j; 
                end
             end
-            img = insertShape(img, 'FilledPolygon', coordinates, 'Color', 255*colors(class_idx, :), 'Opacity', 0.5);
+            if class_idx ~= 0
+                img = insertShape(img, 'FilledPolygon', coordinates, 'Color', 255*colors(class_idx, :), 'Opacity', 0.5);
+            end
         end
     end
     imshow(img);
@@ -173,9 +176,9 @@ function result_to_csv(T, filename)
         "AssignmentId","WorkerId","AssignmentStatus","AcceptTime","SubmitTime","AutoApprovalTime",...
         "ApprovalTime","RejectionTime","RequesterFeedback","WorkTimeInSeconds","LifetimeApprovalRate",...
         "Last30DaysApprovalRate","Last7DaysApprovalRate","Input.img_url","Input.annotation_mode",...
-        "Input.classes","Answer.coordinates","Approve","Reject"];
+        "Input.classes","Input.annotations","Answer.coordinates","Approve","Reject"];
     fid = fopen(filename,'w');
-    format_string = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n";
+    format_string = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n";
     fprintf(fid,format_string,column_names);
     for i = 1:size(T, 1)
         temp_string = T(i, :).Variables;
@@ -209,20 +212,24 @@ function b = escape_quote(a)
     end
 end
 
-function result_to_mask(T)
+function save_mask_and_img(T)
     global img_cache accept_idx
     
     mask_folder = strcat(pwd, '\mask');
-    if ~exist(mask_folder, 'dir')
+    if exist(mask_folder, 'dir')
+        remove_content_from_folder(mask_folder);
+    else
         mkdir(mask_folder);
     end
     
     img_folder = strcat(pwd, '\image');
-    if ~exist(img_folder, 'dir')
+    if exist(img_folder, 'dir')
+        remove_content_from_folder(img_folder);
+    else
         mkdir(img_folder);
     end
 
-    for k = 1:accept_idx
+    for k = 1:length(accept_idx)
         row = accept_idx(k);
         
         % get class name, img url, and annotation JSON struct
@@ -263,12 +270,25 @@ function result_to_mask(T)
                       class_idx = j; 
                    end
                 end
-                img = zeros(size(img));
-                mask = insertShape(img, 'FilledPolygon', coordinates, ...
-                    'Color', [255, 255, 255], 'Opacity', 1);
-                imwrite(mask, strcat(mask_folder, '\', 'row_', string(row), ...
-                    '_instance_', string(i), '_class_', string(class_idx), '.png'));
+                if class_idx ~= 0
+                    img = zeros(size(img));
+                    mask = insertShape(img, 'FilledPolygon', coordinates, ...
+                        'Color', [255, 255, 255], 'Opacity', 1);
+                    imwrite(mask, strcat(mask_folder, '\', 'row_', string(row), ...
+                        '_instance_', string(i), '_class_', string(class_idx), '.png'));
+                end
             end
         end
+    end
+end
+
+function remove_content_from_folder(folder)
+    filePattern = fullfile(folder, '*.png');
+    theFiles = dir(filePattern);
+    for k = 1 : length(theFiles)
+      baseFileName = theFiles(k).name;
+      fullFileName = fullfile(folder, baseFileName);
+      fprintf(1, 'Deleting old content: %s\n', fullFileName);
+      delete(fullFileName);
     end
 end
