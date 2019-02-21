@@ -7,33 +7,40 @@ img_cache = {};
 
 % read table
 T = readtable('sample_result.csv','Delimiter',',','ReadVariableNames',false);
-
+a = T(1, 1).Variables;
+if strcmp(string(a{1}), "HITId") == 1
+    T = T(2:end, :);
+end
 row = 1;
 f = figure; 
-set(gcf, 'Units', 'Normalized', 'OuterPosition', [0 0 1 1]);
+display_ui(f);
 guidata(f, struct('row', row, 'result_table', T));
 show_ann(T, row);
-set(gcf, 'Units', 'pixels');
-figure_size = get(gcf, 'position');
-figure_width = figure_size(3);
-zone_width = 0.2 * figure_width;
-button_width = 0.15 * figure_width;
-buffer_width = 0.025 * figure_width;
-previous_pb = uicontrol(f,'Style','pushbutton','String','Previous',...
-    'Position',[buffer_width 20 button_width 40],'ForegroundColor','white',...
-    'BackgroundColor',[65, 172, 244]/255,'FontSize',14,'Callback',@previous_callback);
-next_pb = uicontrol(f,'Style','pushbutton','String','Next',...
-    'Position',[zone_width+buffer_width 20 button_width 40],'ForegroundColor','white',...
-    'BackgroundColor',[65, 172, 244]/255,'FontSize',14,'Callback',@next_callback);
-approve_pb = uicontrol(f,'Style','pushbutton','String','Approve',...
-    'Position',[2*zone_width+buffer_width 20 button_width 40],'ForegroundColor','white',...
-    'BackgroundColor',[65, 244, 97]/255,'FontSize',14,'Callback',@approve_callback);
-reject_pb = uicontrol(f,'Style','pushbutton','String','Reject',...
-    'Position',[3*zone_width+buffer_width 20 button_width 40],'ForegroundColor','white',...
-    'BackgroundColor',[244, 65, 65]/255,'FontSize',14,'Callback',@reject_callback);
-finish_pb = uicontrol(f,'Style','pushbutton','String','Finish and Export',...
-    'Position',[4*zone_width+buffer_width 20 button_width 40],'ForegroundColor','white',...
-    'BackgroundColor',[255, 177, 68]/255,'FontSize',14,'Callback',@finish_callback);
+
+function display_ui(figure_handle)
+    set(figure_handle, 'Units', 'Normalized', 'OuterPosition', [0 0 1 1]);
+    set(figure_handle, 'Units', 'pixels');
+    figure_size = get(figure_handle, 'position');
+    figure_width = figure_size(3);
+    zone_width = 0.2 * figure_width;
+    button_width = 0.15 * figure_width;
+    buffer_width = 0.025 * figure_width;
+    previous_pb = uicontrol(figure_handle,'Style','pushbutton','String','Previous',...
+        'Position',[buffer_width 20 button_width 40],'ForegroundColor','white',...
+        'BackgroundColor',[65, 172, 244]/255,'FontSize',14,'Callback',@previous_callback);
+    next_pb = uicontrol(figure_handle,'Style','pushbutton','String','Next',...
+        'Position',[zone_width+buffer_width 20 button_width 40],'ForegroundColor','white',...
+        'BackgroundColor',[65, 172, 244]/255,'FontSize',14,'Callback',@next_callback);
+    approve_pb = uicontrol(figure_handle,'Style','pushbutton','String','Approve',...
+        'Position',[2*zone_width+buffer_width 20 button_width 40],'ForegroundColor','white',...
+        'BackgroundColor',[65, 244, 97]/255,'FontSize',14,'Callback',@approve_callback);
+    reject_pb = uicontrol(figure_handle,'Style','pushbutton','String','Reject',...
+        'Position',[3*zone_width+buffer_width 20 button_width 40],'ForegroundColor','white',...
+        'BackgroundColor',[244, 65, 65]/255,'FontSize',14,'Callback',@reject_callback);
+    finish_pb = uicontrol(figure_handle,'Style','pushbutton','String','Finish and Export',...
+        'Position',[4*zone_width+buffer_width 20 button_width 40],'ForegroundColor','white',...
+        'BackgroundColor',[255, 177, 68]/255,'FontSize',14,'Callback',@finish_callback);
+end
 
 function next_callback(hObject, eventdata, handles)
     % get data from figure handle
@@ -42,7 +49,7 @@ function next_callback(hObject, eventdata, handles)
     row = data.row;
     row = row + 1;
     show_ann(T, row);
-    guidata(hObject, struct('row', row, 'result_table', T));
+    guidata(gcf, struct('row', row, 'result_table', T));
 end
 
 function previous_callback(hObject, eventdata, handles)
@@ -51,7 +58,7 @@ function previous_callback(hObject, eventdata, handles)
     row = data.row;
     row = row - 1;
     show_ann(T, row);
-    guidata(hObject, struct('row', row, 'result_table', T));
+    guidata(gcf, struct('row', row, 'result_table', T));
 end
 
 function approve_callback(hObject, eventdata, handles)
@@ -82,7 +89,7 @@ end
 function show_ann(T, row)
     global img_cache;
     
-    row = mod(row, size(T, 1));
+    row = mod(row, size(T, 1)+1);
     if (row == 0)
        row = 1; 
     end
