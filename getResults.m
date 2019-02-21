@@ -69,8 +69,8 @@ function approve_callback(hObject, eventdata, handles)
     data = guidata(hObject);
     T = data.result_table;
     row = data.row;
-    T(row, 32) = {'x'};
-    T(row, 33) = {''};
+    T(row, 33) = {'x'};
+    T(row, 34) = {''};
     accept_idx = [accept_idx, row];
     guidata(hObject, struct('row', row, 'result_table', T));
 end
@@ -81,8 +81,8 @@ function reject_callback(hObject, eventdata, handles)
     data = guidata(hObject);
     T = data.result_table;
     row = data.row;
-    T(row, 32) = {''};
-    T(row, 33) = {'rejected'};
+    T(row, 33) = {''};
+    T(row, 34) = {'rejected'};
     accept_idx = accept_idx(accept_idx ~= row);
     guidata(hObject, struct('row', row, 'result_table', T));
 end
@@ -109,7 +109,7 @@ function show_ann(T, row)
     class_names = split(class_names, '-');
     class_num = length(class_names);
     img_url = strjoin(cellstr(table2cell(T(row, 28))));
-    ann = jsondecode(strjoin(cellstr(table2cell(T(row, 31)))));
+    ann = jsondecode(strjoin(cellstr(table2cell(T(row, 32)))));
 
     % get cached image or download image from img url
     if (length(img_cache) < row)
@@ -225,7 +225,7 @@ function result_to_mask(T)
         class_names = strjoin(cellstr(table2cell(T(row, 30))));
         class_names = split(class_names, '-');
         class_num = length(class_names);
-        ann = jsondecode(strjoin(cellstr(table2cell(T(row, 31)))));
+        ann = jsondecode(strjoin(cellstr(table2cell(T(row, 32)))));
 
         % get accepted image from cache
         img = img_cache{row};
