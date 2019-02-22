@@ -13,7 +13,7 @@ Authors:
 * Zoom-in, zoom-out, delete, undo, reset
 
 I'm aware that Amazon has recently released their own image segmentation tool. There are 3 advantages of my tool compared to theirs:
-* It seems to be a semantic segmentation tool, which is different from instance segmentation. For semantic segmentation you basically label which pixel belongs to which class, but if there are multiple instances of the same class, semantic segmentation doesn't differentiate them.
+* ~~It seems to be a semantic segmentation tool, which is different from instance segmentation.~~ (Edit: Amazon recently added a Polygon tool that essentially serves as instance segmentation, kudos to them!)
 * Their tool also seemed a little buggy. When I tried it, only 1 of the 2 images got loaded correctly, and the annotation results in the downloaded csv was confusing (it looked somewhat like "B8gzS96nSL7Xnp0").
 * The most import thing is that their tool is encapsulated into their internal API, which we have no direct access to. That means if you want to change something or add something that was not included in the official example, you would have to write a new tool from scratch. My tool is written in plain JavaScript, with a little help from jQuery and bootstrap. Feel free to adapt it to your needs.
 
