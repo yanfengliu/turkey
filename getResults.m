@@ -28,19 +28,19 @@ function display_ui(figure_handle)
     button_width = 0.15 * figure_width;
     buffer_width = 0.025 * figure_width;
     previous_pb = uicontrol(figure_handle,'Style','pushbutton','String','Previous',...
-        'Position',[buffer_width 20 button_width 40],'ForegroundColor','white',...
+        'Position',[buffer_width 20 button_width 40],'ForegroundColor','black',...
         'BackgroundColor',[65, 172, 244]/255,'FontSize',14,'Callback',@previous_callback);
     next_pb = uicontrol(figure_handle,'Style','pushbutton','String','Next',...
-        'Position',[zone_width+buffer_width 20 button_width 40],'ForegroundColor','white',...
+        'Position',[zone_width+buffer_width 20 button_width 40],'ForegroundColor','black',...
         'BackgroundColor',[65, 172, 244]/255,'FontSize',14,'Callback',@next_callback);
     approve_pb = uicontrol(figure_handle,'Style','pushbutton','String','Approve',...
-        'Position',[2*zone_width+buffer_width 20 button_width 40],'ForegroundColor','white',...
-        'BackgroundColor',[65, 244, 97]/255,'FontSize',14,'Callback',@approve_callback);
+        'Position',[2*zone_width+buffer_width 20 button_width 40],'ForegroundColor','black',...
+        'BackgroundColor',[255, 255, 255]/255,'FontSize',14,'Callback',@approve_callback);
     reject_pb = uicontrol(figure_handle,'Style','pushbutton','String','Reject',...
-        'Position',[3*zone_width+buffer_width 20 button_width 40],'ForegroundColor','white',...
-        'BackgroundColor',[244, 65, 65]/255,'FontSize',14,'Callback',@reject_callback);
+        'Position',[3*zone_width+buffer_width 20 button_width 40],'ForegroundColor','black',...
+        'BackgroundColor',[255, 255, 255]/255,'FontSize',14,'Callback',@reject_callback);
     finish_pb = uicontrol(figure_handle,'Style','pushbutton','String','Finish and Export',...
-        'Position',[4*zone_width+buffer_width 20 button_width 40],'ForegroundColor','white',...
+        'Position',[4*zone_width+buffer_width 20 button_width 40],'ForegroundColor','black',...
         'BackgroundColor',[255, 177, 68]/255,'FontSize',14,'Callback',@finish_callback);
 end
 
@@ -50,8 +50,8 @@ function next_callback(hObject, ~, ~)
     T = data.result_table;
     row = data.row;
     row = row + 1;
-    show_ann(T, row);
     guidata(gcf, struct('row', row, 'result_table', T));
+    show_ann(T, row);
 end
 
 function previous_callback(hObject, ~, ~)
@@ -59,13 +59,13 @@ function previous_callback(hObject, ~, ~)
     T = data.result_table;
     row = data.row;
     row = row - 1;
-    show_ann(T, row);
     guidata(gcf, struct('row', row, 'result_table', T));
+    show_ann(T, row);
 end
 
-function approve_callback(hObject, ~, ~)
+function approve_callback(hObject, eventdata, ~)
     global accept_idx; 
-    
+    eventdata.Source.BackgroundColor = [65, 244, 97]/255;
     data = guidata(hObject);
     T = data.result_table;
     row = data.row;
@@ -73,11 +73,12 @@ function approve_callback(hObject, ~, ~)
     T(row, 34) = {''};
     accept_idx = [accept_idx, row];
     guidata(hObject, struct('row', row, 'result_table', T));
+    update_ui(T, row);
 end
 
-function reject_callback(hObject, ~, ~)
+function reject_callback(hObject, eventdata, ~)
     global accept_idx; 
-    
+    eventdata.Source.BackgroundColor = [244, 65, 65]/255;
     data = guidata(hObject);
     T = data.result_table;
     row = data.row;
@@ -85,6 +86,7 @@ function reject_callback(hObject, ~, ~)
     T(row, 34) = {'rejected'};
     accept_idx = accept_idx(accept_idx ~= row);
     guidata(hObject, struct('row', row, 'result_table', T));
+    update_ui(T, row);
 end
 
 function finish_callback(hObject, ~, ~)
@@ -98,6 +100,25 @@ function finish_callback(hObject, ~, ~)
     fprintf("Review CSV exported to %s\n", strcat(folder, '\review.csv'));
 end
 
+function update_ui(T, row)
+    approval = T(row, 33).Variables;
+    approval = approval{1};
+    rejection = T(row, 34).Variables;
+    rejection = rejection{1};
+    approve_pb = findobj('String', 'Approve');
+    reject_pb = findobj('String', 'Reject');
+    if strcmp(string(approval), "x")
+        approve_pb.BackgroundColor = [65, 244, 97]/255;
+        reject_pb.BackgroundColor = [255, 255, 255]/255;
+    elseif strcmp(string(rejection), "rejected")
+        approve_pb.BackgroundColor = [255, 255, 255]/255;
+        reject_pb.BackgroundColor = [244, 65, 65]/255;
+    else
+        approve_pb.BackgroundColor = [255, 255, 255]/255;
+        reject_pb.BackgroundColor = [255, 255, 255]/255;
+    end
+end
+
 function show_ann(T, row)
     global img_cache;
     
@@ -106,6 +127,7 @@ function show_ann(T, row)
     if (row == 0)
        row = total; 
     end
+    update_ui(T, row);
     
     % get class name, img url, and annotation JSON struct
     class_names = strjoin(cellstr(table2cell(T(row, 30))));
