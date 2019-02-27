@@ -13,7 +13,7 @@ if strcmp(string(a{1}), "HITId") == 1
     T = T(2:end, :);
 end
 row = 1;
-f = figure; 
+f = figure;
 display_ui(f);
 guidata(f, struct('row', row, 'result_table', T));
 show_ann(T, row);
@@ -50,6 +50,13 @@ function next_callback(hObject, ~, ~)
     T = data.result_table;
     row = data.row;
     row = row + 1;
+    
+    total = size(T, 1);
+    row = mod(row, total);
+    if (row == 0)
+       row = total; 
+    end
+    
     guidata(gcf, struct('row', row, 'result_table', T));
     show_ann(T, row);
 end
@@ -59,6 +66,13 @@ function previous_callback(hObject, ~, ~)
     T = data.result_table;
     row = data.row;
     row = row - 1;
+    
+    total = size(T, 1);
+    row = mod(row, total);
+    if (row == 0)
+       row = total; 
+    end
+    
     guidata(gcf, struct('row', row, 'result_table', T));
     show_ann(T, row);
 end
@@ -121,12 +135,6 @@ end
 
 function show_ann(T, row)
     global img_cache;
-    
-    total = size(T, 1);
-    row = mod(row, total);
-    if (row == 0)
-       row = total; 
-    end
     update_ui(T, row);
     
     % get class name, img url, and annotation JSON struct
