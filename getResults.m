@@ -185,11 +185,22 @@ function show_ann(T, row)
                end
             end
             if class_idx ~= 0
-                img = insertShape(img, 'FilledPolygon', coordinates, 'Color', 255*colors(class_idx, :), 'Opacity', 0.5);
+                img = insertShape(img, 'FilledPolygon', coordinates, ...
+                    'Color', 255*colors(class_idx, :), 'Opacity', 0.5);
             end
         end
     end
+    dims = size(img);
+    legend_width = 100;
+    legend_x = dims(2)-legend_width;
+    legend_y = 0;
+    for i = 1:class_num
+        img = insertText(img, [legend_x, legend_y], class_names(i), 'FontSize', 18, ...
+            'BoxColor', 255*colors(i, :), 'BoxOpacity', 0.5, 'TextColor', 'white');
+        legend_y = legend_y + 35;
+    end
     imshow(img);
+    
 end
 
 function [val] = myHash(input_string)
