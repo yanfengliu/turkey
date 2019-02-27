@@ -7,7 +7,11 @@ img_cache = {};
 accept_idx = [];
 
 % read table
-T = readtable('sample_result.csv','Delimiter',',','ReadVariableNames',false);
+if exist('review.csv', 'file') == 2
+    T = readtable('review.csv','Delimiter',',','ReadVariableNames',false);
+else
+    T = readtable('sample_result.csv','Delimiter',',','ReadVariableNames',false);
+end
 a = T(1, 1).Variables;
 if strcmp(string(a{1}), "HITId") == 1
     T = T(2:end, :);
@@ -199,8 +203,9 @@ function [val] = myHash(input_string)
 end
 
 function save_path = export_results(T)
-    save_path = strcat(pwd, '\', datestr(datenum(datetime('now')), 'dd-mmm-yyyy_HH-MM-SS'));
-    mkdir(save_path);
+%     save_path = strcat(pwd, '\', datestr(datenum(datetime('now')), 'dd-mmm-yyyy_HH-MM-SS'));
+%     mkdir(save_path);
+    save_path = pwd;
     result_to_csv(T, strcat(save_path, '\review.csv'));
     save_mask_and_img(T, save_path);
 end
