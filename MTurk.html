@@ -626,35 +626,27 @@
     function getDeleteIdx(){
         var deleteIdx = -1;
         var min_dist = 1000000;
-        var dist;
+        var dist_array = new Array();
         for (var i = 0; i < annotations.length; i++) {
             var ann = annotations[i];
             var corners = ann.data;
             switch (ann.mode) {
                 case "dot":
-                    dist = getDist([correctX, correctY], corners);
-                    if (dist < min_dist) {
-                        min_dist = dist;
-                        deleteIdx = i;
-                    }
+                    dist_array.push(getDist([correctX, correctY], corners));
                     break;
                 case "link":
-                    for (var j = 0; j < 2; j++) {
-                        dist = getDist([correctX, correctY], corners[j]);
-                        if (dist < min_dist) {
-                            min_dist = dist;
-                            deleteIdx = i;
-                        }
-                    }
+                    dist_array.push(get_avg_dist(corners));
                     break;
                 case "polygon":
-                    for (var j = 1; j < corners.length; j++) {
-                        dist = getDist([correctX, correctY], corners[j]);
-                        if (dist < min_dist) {
-                            min_dist = dist;
-                            deleteIdx = i;
-                        }
-                    }
+                    dist_array.push(get_avg_dist(corners));
+            }
+        }
+        var dist;
+        for (var i = 0; i < dist_array.length; i++){
+            dist = dist_array[i];
+            if (dist < min_dist) {
+                min_dist = dist;
+                deleteIdx = i;
             }
         }
         return deleteIdx
@@ -681,6 +673,23 @@
 
     function capitalize(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    function mean(array){
+        var total = 0;
+        for (var j = 0; j < array.length; j++) {
+            total += array[j];
+        }
+        var avg = total / array.length;
+        return avg;
+    }
+
+    function get_avg_dist(corners){
+        var avg_dist_array = new Array();
+        for (var j = 0; j < corners.length; j++) {
+            avg_dist_array.push(getDist([correctX, correctY], corners[j]));
+        }
+        return mean(avg_dist_array);
     }
 
     String.prototype.hashCode = function () {
