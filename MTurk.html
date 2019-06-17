@@ -250,7 +250,7 @@
             dragged = false; 
         });
 
-        canvas.addEventListener('mousedown', function (evt) {
+        canvas.addEventListener('pointerdown', function (evt) {
             timeDownUp = new Date().getTime();
             // mouse down function go here
             anchorX = evt.clientX;
@@ -259,7 +259,7 @@
             dragStart = true;
         });
 
-        canvas.addEventListener('mouseup', function (evt) {
+        canvas.addEventListener('pointerup', function (evt) {
             timeDownUp = new Date().getTime();
             getCorrectCoords(evt);
             if (!dragged) {
