@@ -172,7 +172,10 @@
         if (annotations_str == ("$" + "{annotations}")){
             annotations = [];
         } else {
+            annotations_str = annotations_str.replace(/'/g, '"');
+            annotations_str = annotations_str.replace(/;/g, ',');
             annotations = JSON.parse(annotations_str);
+            annotationsChanged();
         }
 
         annotations.push = function(obj) {
@@ -215,6 +218,7 @@
 
         classSelection.size = Math.min(10, classes.length);
         classSelection.selectedIndex = 0;
+        updateGraphics();
 
         //initialize buttons
         document.getElementById("reset_button").addEventListener("click", function (e) {
