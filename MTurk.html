@@ -108,6 +108,11 @@
         <input class="btn btn-warning" id="reposition_button" type="button" value = "Reposition" />
     </p>
 
+    <p>
+        <label for="transparency">Transparency percentage</label>
+        <input type="range" min="0" max="100" class="range-field my-4 w-25" id="transparency_slider">
+    </p>
+
     <div>
         <!-- Coordinates input from user -->
         <input id="coordinates" name="coordinates" type="hidden" />
@@ -128,6 +133,7 @@
     var dragged, dragStart, delta, scaleRatio, scaleDiff;
     var child, parent, canvas, ctx, img;
     var annotations, modes, classSelection;
+    var transparency_level = 0.5;
     var dragOffsetX = 0;
     var dragOffsetY = 0;
     var scalingOffsetX = 0;
@@ -219,6 +225,13 @@
         classSelection.size = Math.min(10, classes.length);
         classSelection.selectedIndex = 0;
         updateGraphics();
+
+        //initialize slider
+        var slider = document.getElementById('transparency_slider')
+        slider.onchange = function() {
+            transparency_level = this.value / 100.0;
+            updateGraphics();
+        };
 
         //initialize buttons
         document.getElementById("reset_button").addEventListener("click", function (e) {
@@ -458,7 +471,7 @@
                         break;
                     case "polygon":
                         // draw complete polygons
-                        ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 0.5)";
+                        ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", " + transparency_level + ")";
                         ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                         ctx.beginPath();
                         ctx.moveTo(corners[0][0], corners[0][1]);
@@ -499,7 +512,7 @@
                 var r = rgbColors.r.toString();
                 var g = rgbColors.g.toString();
                 var b = rgbColors.b.toString();
-                ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+                ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", " + transparency_level + ")";
                 ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                 var dots = currentPolygon.data;
                 for (var j = 0; j < dots.length; j++) {
