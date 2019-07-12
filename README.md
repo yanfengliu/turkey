@@ -26,7 +26,7 @@ Copy the contents of `Mturk.html` into the source code section when you create a
 ```
 img_url,annotation_mode,classes,annotations
 https://i.imgur.com/kcCSGTR.jpg, dot-polygon-link, person-dog-house,"[{'class':'house';'mode':'polygon';'data':[[85;450];[41;524];[96;581];[163;531]]};{'class':'dog';'mode':'polygon';'data':[[246;461];[203;489];[268;500]]}]"
-https://i.imgur.com/2yOma1u.jpg, polygon, cat-person-sky-food,[]
+https://i.imgur.com/2yOma1u.jpg, polygon, cat-person-sky-food,"[{'class':'cat';'mode':'polygon';'data':[[543,498];[534,524];[533;563];[542;578];[555;572];[559;559]]}]"
 ```
 
 Here, we allow the worker to use **Polygon**, **Link** and **Dot** modes for annotating the first image, but only the **Polygon** mode for the second. The class labels that the user can choose from are **house**, **person**, **car**, and **dog**. The first item in the list will be the default option. You can also import previous annotations by putting the correctly formatted json string into column "annotations".
