@@ -137,6 +137,16 @@ function update_ui(T, row)
     end
 end
 
+function class_idx = get_class_idx(ann, class_num, class_names)
+    class_idx = 0;
+    for j = 1:class_num
+       if strcmp(ann.class, class_names(j))
+          class_idx = j;
+          break;
+       end
+    end
+end
+
 function show_ann(T, row)
     global img_cache;
     update_ui(T, row);
@@ -170,23 +180,30 @@ function show_ann(T, row)
        colors(i, :) = hsv2rgb(hsv);
     end
 
-    % display annotations as filled transparent polygons. Only supports polygons right now. 
-    % TODO: Add support for dots and links. 
+    % Display annotations as filled transparent polygons. 
+    % Only supports polygons and bbox for now.
+    % TODO: add support for dot and link. 
     for i = 1:size(ann, 1)
         if (strcmp(ann(i).mode, 'polygon'))
             coordinates = [];
             for j = 1:size(ann(i).data, 1)
                 coordinates = [coordinates, ann(i).data(j, :)];
             end
-            class_idx = 0;
-            for j = 1:class_num
-               if strcmp(ann(i).class, class_names(j))
-                  class_idx = j; 
-               end
-            end
+            class_idx = get_class_idx(ann(i), class_num, class_names);
             if class_idx ~= 0
                 img = insertShape(img, 'FilledPolygon', coordinates, ...
                     'Color', 255*colors(class_idx, :), 'Opacity', 0.5);
+            end
+        elseif (strcmp(ann(i).mode, 'bbox'))
+            % [xmin, ymin, xmax, ymax]
+            x = ann(i).data(1, 1);
+            y = ann(i).data(1, 2);
+            w = ann(i).data(2, 1) - x;
+            h = ann(i).data(2, 2) - y;
+            class_idx = get_class_idx(ann(i), class_num, class_names);
+            if class_idx ~= 0
+                img = insertShape(img, 'Rectangle', [x, y, w, h], ...
+                    'Color', 255*colors(class_idx, :), 'LineWidth', 4);
             end
         end
     end
@@ -304,20 +321,16 @@ function save_mask_and_img(T, save_path)
            colors(i, :) = hsv2rgb(hsv);
         end
 
-        % display annotations as filled transparent polygons. Only supports polygons right now. 
-        % TODO: Add support for dots and links. 
+        % Display annotations as filled transparent polygons. 
+        % Only supports polygon right now. 
+        % TODO: Add support for dot, link, and bbox. 
         for i = 1:size(ann, 1)
             if (strcmp(ann(i).mode, 'polygon'))
                 coordinates = [];
                 for j = 1:size(ann(i).data, 1)
                     coordinates = [coordinates, ann(i).data(j, :)];
                 end
-                class_idx = 0;
-                for j = 1:class_num
-                   if strcmp(ann(i).class, class_names(j))
-                      class_idx = j; 
-                   end
-                end
+                class_idx = get_class_idx(ann(i), class_num, class_names);
                 if class_idx ~= 0
                     img = zeros(size(img));
                     mask = insertShape(img, 'FilledPolygon', coordinates, ...

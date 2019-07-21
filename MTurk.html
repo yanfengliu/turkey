@@ -81,11 +81,13 @@
     <button id="title" type="button" class="btn btn-outline-primary btn-lg">Instructions</button>
     <select id="class" class="form-control"></select>
     <ul id="instruction">
-        <li>Click to annotate the image using up to three modes:</li>
+        <li>Hold <strong>right click</strong> to draw the image.</li>
+        <li><strong>Left click</strong> to annotate the image using up to three modes:</li>
         <ul>
-            <li><strong>Dot mode</strong> indicates the location of the object with one click. </li>
+            <li><strong>Dot mode</strong> indicates the location of the object with one left click. </li>
             <li><strong>Link mode</strong> indicates head (1st click) and tail (2nd click).</li>
             <li><strong>Polygon mode</strong> draws the segmentation mask of the object.</li>
+            <li><strong>Bbox mode</strong> draws the bounding box of the object by holding down left click. </li>
         </ul>
         <li>The <strong>Mode toggle</strong> button indicates the current mode</li>
         <li>Press <strong>CTRL+Z</strong> or click the <strong>Undo</strong> button to undo last deletion/annotation.</li>
@@ -128,7 +130,7 @@
 </div>
 
 <script id="turkey" type="text/javascript">
-    var translateX, translateY, correctX, correctY
+    var translateX, translateY, correctX, correctY;
     var anchorX, anchorY, dragX, dragY, mouseX, mouseY;
     var dragged, dragStart, delta, scaleRatio, scaleDiff;
     var child, parent, canvas, ctx, img;
@@ -152,9 +154,11 @@
     var trashcan = new Array();
     var colors = {};
     var timeDownUp = null;
+    var rightClick = false;
 
-    var currentLink = { 'class': [], 'mode': 'link', 'data': [] };
+    var currentLink    = { 'class': [], 'mode': 'link', 'data': [] };
     var currentPolygon = { 'class': [], 'mode': 'polygon', 'data': [] };
+    var currentBbox    = { 'class': [], 'mode': 'bbox', 'data': [] };
 
     var start = function () {
         parent = document.getElementById("parent");
@@ -168,9 +172,10 @@
         canvas.height = img.height;
         canvas.style.cursor = "crosshair";
         
-        $('#instruction').slideUp(1500);
+        $('#instruction').slideUp(1000);
 
         $('#title').click(function () {
+            $('#instruction').clearQueue();
             $('#instruction').slideToggle();
         });
 
@@ -197,7 +202,7 @@
         var mode_data = "${annotation_mode}";
         if (mode_data == ("$" + "{annotation_mode}")) // running in local demo mode
         {
-            mode_data = "dot-link-polygon";
+            mode_data = "dot-link-polygon-bbox";
         }
         modes = mode_data.split('-');
         mode = modes[0];
@@ -228,35 +233,30 @@
 
         //initialize slider
         var slider = document.getElementById('transparency_slider')
-        slider.onchange = function() {
+        slider.oninput = function() {
             transparency_level = this.value / 100.0;
             updateGraphics();
         };
 
         //initialize buttons
-        document.getElementById("reset_button").addEventListener("click", function (e) {
-            reset();
-        });
-        document.getElementById("reposition_button").addEventListener("click", function (e) {
-            reposition();
-        });
-        document.getElementById("undo_button").addEventListener("click", function (e) {
-            undo();
-        });
-        document.getElementById("mode_button").addEventListener("click", function (e) {
-            toggleMode();
-        });
-        document.getElementById("delete_button").addEventListener("click", function (e) {
-            setDeleteMode(true);
-        });
-        document.getElementById("annotate_button").addEventListener("click", function (e) {
-            setDeleteMode(false);
-        });
+        $("#reset_button"     ).click(reset);
+        $("#reposition_button").click(reposition);
+        $("#undo_button"      ).click(undo);
+        $("#mode_button"      ).click(toggleMode);
+        $("#delete_button"    ).click(setDeleteMode);
+        $("#annotate_button"  ).click(setDeleteMode);
+
         document.getElementById("submitButton").disabled = false;
         document.getElementById("buttons").appendChild(document.getElementById("submitButton"));
 
         child.addEventListener('DOMMouseScroll', handleScroll, false);
         child.addEventListener('mousewheel', handleScroll, false);
+
+        // disable right click context menu on canvas
+        canvas.oncontextmenu = function ()
+        {
+            return false;
+        }
 
         canvas.addEventListener('mouseout', function(evt) {
             dragStart = false;
@@ -264,54 +264,45 @@
         });
 
         canvas.addEventListener('pointerdown', function (evt) {
+            rightClick = evt.which == 3;
+            getCorrectCoords(evt);
             timeDownUp = new Date().getTime();
-            // mouse down function go here
             anchorX = evt.clientX;
             anchorY = evt.clientY;
             dragged = false;
             dragStart = true;
+            if (mode == "bbox" && !rightClick && !getDeleteMode()){
+                currentBbox.class = getClass();
+                currentBbox.data = new Array();
+                currentBbox.data.push([correctX, correctY]);
+            }
         });
 
         canvas.addEventListener('pointerup', function (evt) {
             timeDownUp = new Date().getTime();
             getCorrectCoords(evt);
-            if (!dragged) {
-                if (getDeleteMode() == true) {
-                    if (delete_idx > -1) {
-                        var ann_copy = deep_copy(annotations[delete_idx]);
-                        trashcan.push(ann_copy);
-                        annotations.splice(delete_idx, 1);
-                        getCorrectCoords(evt);
-                        delete_idx = getDeleteIdx();
-                        if(annotations.length == 0)
-                            // no more to delete, go back to annotate mode
-                            setDeleteMode(false);
+            if (dragged) {
+                if (mode == "bbox" && !rightClick) {
+                    currentBbox.data.push([correctX, correctY]);
+                    annotations.push(Object.assign({}, currentBbox));
+                    currentBbox.data = new Array();
+                }
+            } else {
+                if (!rightClick){
+                    if (getDeleteMode() == true) {
+                        deleteAnnotation();
+                    } else {
+                        updateAnnotation();
                     }
                 } else {
-                    switch (mode) {
-                        case "dot": // dot mode
-                            annotations.push({ 'class': getClass(), 'mode': 'dot', 'data': [correctX, correctY] });
-                            break;
-                        case "link": // link mode
-                            currentLink.class = getClass();
-                            currentLink.data.push([correctX, correctY]);
-                            if (firstPoint) {
-                                firstPoint = false;
-                            } else {
-                                annotations.push(Object.assign({}, currentLink));
-                                currentLink.data = new Array();
-                                firstPoint = true;
-                            }
-                            break;
-                        case "polygon": // polygon mode
-                            currentPolygon.class = getClass();
-                            currentPolygon.data.push([correctX, correctY]);
-                    }
+                    currentBbox.data = new Array();
                 }
             }
-            updateGraphics();
+
+            rightClick = false;
             dragStart = false;
-            // print coordinates
+            updateGraphics();
+
             if (annotations.length == 0) {
                 document.getElementById('coordinates').value = '';
             } else {
@@ -320,38 +311,65 @@
         });
 
         canvas.addEventListener('mousemove', function (evt) {
+            getCorrectCoords(evt);
             if (getDeleteMode() == true) {
-                getCorrectCoords(evt);
                 delete_idx = getDeleteIdx();
                 updateGraphics();
-            } else {
+            } else if (rightClick) {
                 var timeMove = new Date().getTime();
-                // timeDownUp += 30;
                 if (timeMove > timeDownUp) {
-                    if (event.which === 1) {
-                        if (dragStart) {
-                            dragged = true;
-                            dragX = evt.clientX - anchorX;
-                            dragY = evt.clientY - anchorY;
-                            translateTransform_raw = [translateTransform_raw[0] + dragX, translateTransform_raw[1] + dragY];
-                            translateTransform[0] = translateTransform_raw[0] / newScale;
-                            translateTransform[1] = translateTransform_raw[1] / newScale;
-                            updateTransform();
-                            dragOffsetX += dragX;
-                            dragOffsetY += dragY;
-                            anchorX = evt.clientX;
-                            anchorY = evt.clientY;
-                        }
+                    if (dragStart) {
+                        dragged = true;
+                        dragX = evt.clientX - anchorX;
+                        dragY = evt.clientY - anchorY;
+                        translateTransform_raw = [translateTransform_raw[0] + dragX, translateTransform_raw[1] + dragY];
+                        translateTransform[0] = translateTransform_raw[0] / newScale;
+                        translateTransform[1] = translateTransform_raw[1] / newScale;
+                        updateTransform();
+                        dragOffsetX += dragX;
+                        dragOffsetY += dragY;
+                        anchorX = evt.clientX;
+                        anchorY = evt.clientY;
                     }
                 } else {
                     timeDownUp = null;
                 }
+            } else if (mode == "bbox" && dragStart) {
+                dragged = true;
+                updateGraphics();
+            } else if (mode == "link") {
+                updateGraphics();
             }
-            
         });
 
+        function drawPolygonOutline(corners) {
+            for (var j = 0; j < corners.length; j++) {
+                ctx.fillRect(corners[j][0] - dotSize / 2, corners[j][1] - dotSize / 2, dotSize, dotSize);
+            }
+            ctx.beginPath();
+            ctx.moveTo(corners[0][0], corners[0][1]);
+            for (var j = 1; j < corners.length; j++) {
+                ctx.lineTo(corners[j][0], corners[j][1]);
+                ctx.stroke();
+            }
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+        function fillPolygon(corners) {
+            ctx.beginPath();
+            ctx.moveTo(corners[0][0], corners[0][1]);
+            for (var j = 1; j < corners.length; j++) {
+                ctx.lineTo(corners[j][0], corners[j][1]);
+                ctx.stroke();
+            }
+            ctx.lineTo(corners[0][0], corners[0][1]);
+            ctx.stroke();
+            ctx.closePath();
+            ctx.fill();
+        }
+
         function toggleMode() {
-            // clearAnnotations();
             modeNum += 1;
             if (modeNum >= modes.length) {
                 modeNum = 0;
@@ -359,6 +377,25 @@
             setDeleteMode(false);
             mode = modes[modeNum];
             modeButton.value = 'Mode: ' + capitalize(mode);
+            clearCurrentAnn();
+        }
+
+        function clearCurrentAnn() {
+            currentBbox.data = new Array();
+            currentLink.data = new Array();
+            currentPolygon.data = new Array();
+        }
+
+        function deleteAnnotation() {
+            if (delete_idx > -1) {
+                var ann_copy = deep_copy(annotations[delete_idx]);
+                trashcan.push(ann_copy);
+                annotations.splice(delete_idx, 1);
+                delete_idx = getDeleteIdx();
+                if(annotations.length == 0)
+                    // no more to delete, go back to annotate mode
+                    setDeleteMode(false);
+            }
         }
 
         function toggleDelete () {
@@ -421,6 +458,28 @@
             scalingOffsetY = 0;
         }
 
+        function updateAnnotation() {
+            switch (mode) {
+                case "dot": // dot mode
+                    annotations.push({ 'class': getClass(), 'mode': 'dot', 'data': [correctX, correctY] });
+                    break;
+                case "link": // link mode
+                    currentLink.class = getClass();
+                    currentLink.data.push([correctX, correctY]);
+                    if (firstPoint) {
+                        firstPoint = false;
+                    } else {
+                        annotations.push(Object.assign({}, currentLink));
+                        currentLink.data = new Array();
+                        firstPoint = true;
+                    }
+                    break;
+                case "polygon": // polygon mode
+                    currentPolygon.class = getClass();
+                    currentPolygon.data.push([correctX, correctY]);
+            }
+        }
+
         function clearAnnotations() {
             annotations = new Array();
             trashcan = new Array();
@@ -443,14 +502,7 @@
                 if (getDeleteMode() == true && delete_idx == i) {
                     r = g = b = 0.5;
                 } else {
-                    var color = colors[ann.class];
-                    var h = color[0];
-                    var s = color[1];
-                    var v = color[2];
-                    var rgbColors = HSVtoRGB(h, s, v);
-                    r = rgbColors.r.toString();
-                    g = rgbColors.g.toString();
-                    b = rgbColors.b.toString();
+                    [r, g, b] = getColor(ann);
                 }
                 switch (ann.mode) {
                     case "dot":
@@ -459,7 +511,7 @@
                         break;
                     case "link":
                         // draw complete links
-                        ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+                        ctx.fillStyle   = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                         ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                         ctx.beginPath();
                         ctx.moveTo(corners[0][0], corners[0][1]);
@@ -471,62 +523,59 @@
                         break;
                     case "polygon":
                         // draw complete polygons
-                        ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", " + transparency_level + ")";
+                        ctx.fillStyle   = "rgba(" + r + "," + g + "," + b + ", " + transparency_level + ")";
                         ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
-                        ctx.beginPath();
-                        ctx.moveTo(corners[0][0], corners[0][1]);
-                        for (var j = 1; j < corners.length; j++) {
-                            ctx.lineTo(corners[j][0], corners[j][1]);
-                            ctx.stroke();
-                        }
-                        ctx.lineTo(corners[0][0], corners[0][1]);
-                        ctx.stroke();
-                        ctx.closePath();
-                        ctx.fill();
+                        fillPolygon(corners);
+                        break;
+                    case "bbox":
+                        ctx.fillStyle   = "rgba(1, 1, 1, 0)";
+                        ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+                        var xmin = ann.data[0][0];
+                        var ymin = ann.data[0][1];
+                        var xmax = ann.data[1][0];
+                        var ymax = ann.data[1][1];
+                        var corners = [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]];
+                        fillPolygon(corners);
                 }
             }
 
             // draw current link
             if (currentLink.data.length != 0) {
-                var color = colors[currentLink.class];
-                var h = color[0];
-                var s = color[1];
-                var v = color[2];
-                var rgbColors = HSVtoRGB(h, s, v);
-                var r = rgbColors.r.toString();
-                var g = rgbColors.g.toString();
-                var b = rgbColors.b.toString();
-                ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+                var r, g, b;
+                [r, g, b] = getColor(currentLink);
+                ctx.fillStyle   = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                 ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
                 var dot = currentLink.data;
                 ctx.fillRect(dot[0][0] - dotSize / 2, dot[0][1] - dotSize / 2, dotSize, dotSize);
+                ctx.beginPath();
+                ctx.moveTo(dot[0][0], dot[0][1]);
+                ctx.lineTo(correctX, correctY);
+                ctx.closePath();
+                ctx.stroke();
             }
 
             // draw current polygon
             if (currentPolygon.data.length != 0) {
-                var color = colors[currentPolygon.class];
-                var h = color[0];
-                var s = color[1];
-                var v = color[2];
-                var rgbColors = HSVtoRGB(h, s, v);
-                var r = rgbColors.r.toString();
-                var g = rgbColors.g.toString();
-                var b = rgbColors.b.toString();
-                ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", " + transparency_level + ")";
+                var r, g, b;
+                [r, g, b] = getColor(currentPolygon);
+                ctx.fillStyle   = "rgba(" + r + "," + g + "," + b + ", " + transparency_level + ")";
                 ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
-                var dots = currentPolygon.data;
-                for (var j = 0; j < dots.length; j++) {
-                    ctx.fillRect(dots[j][0] - dotSize / 2, dots[j][1] - dotSize / 2, dotSize, dotSize);
-                }
-                // draw lines connecting the dots
-                ctx.beginPath();
-                ctx.moveTo(dots[0][0], dots[0][1]);
-                for (var j = 1; j < dots.length; j++) {
-                    ctx.lineTo(dots[j][0], dots[j][1]);
-                    ctx.stroke();
-                }
-                ctx.stroke();
-                ctx.closePath();
+                var corners = currentPolygon.data;
+                drawPolygonOutline(corners);
+            }
+
+            // draw current bbox
+            if (currentBbox.data.length != 0){
+                var r, g, b;
+                [r, g, b] = getColor(currentBbox);
+                ctx.fillStyle   = "rgba(1, 1, 1, 0)";
+                ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+                var xmin = currentBbox.data[0][0];
+                var ymin = currentBbox.data[0][1];
+                var xmax = correctX;
+                var ymax = correctY;
+                var corners = [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]];
+                fillPolygon(corners);
             }
         }
 
@@ -581,8 +630,6 @@
                     currentPolygon.class = getClass();
                     annotations.push(Object.assign({}, currentPolygon));
                     currentPolygon.data = new Array();
-                } else {
-                    alert("Pressing C closes current polygon. Polygon with fewer than 3 vertices detected.")
                 }
                 // Update coordinates
                 if (annotations.length == 0) {
@@ -651,6 +698,9 @@
                     dist_array.push(get_avg_dist(corners));
                     break;
                 case "polygon":
+                    dist_array.push(get_avg_dist(corners));
+                    break;
+                case "bbox":
                     dist_array.push(get_avg_dist(corners));
             }
         }
@@ -742,6 +792,18 @@
             g: Math.round(g * 255),
             b: Math.round(b * 255)
         };
+    }
+
+    function getColor(ann){
+        var color = colors[ann.class];
+        var h = color[0];
+        var s = color[1];
+        var v = color[2];
+        var rgbColors = HSVtoRGB(h, s, v);
+        var r = rgbColors.r.toString();
+        var g = rgbColors.g.toString();
+        var b = rgbColors.b.toString();
+        return [r, g, b]
     }
 
 </script>
