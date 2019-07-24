@@ -284,7 +284,9 @@
             if (dragged) {
                 if (mode == "bbox" && !rightClick) {
                     currentBbox.data.push([correctX, correctY]);
-                    annotations.push(Object.assign({}, currentBbox));
+                    if (currentBbox.data.length == 2){
+                        annotations.push(Object.assign({}, currentBbox));
+                    }
                     currentBbox.data = new Array();
                 }
             } else {
@@ -441,6 +443,9 @@
             clearAnnotations();
             reposition();
             firstPoint = true;
+            dragStart = false;
+            dragged = false;
+            setDeleteMode(false);
         }
 
         function reposition() {
@@ -595,6 +600,7 @@
                             annotations.pop();
                         } else {
                             currentLink.data = new Array();
+                            firstPoint = true;
                         }
                         break;
                     case "polygon":
@@ -602,6 +608,15 @@
                             annotations.pop();
                         } else {
                             currentPolygon.data.pop();
+                        }
+                        break;
+                    case "bbox":
+                        if (currentBbox.data.length == 0){
+                            annotations.pop();
+                        } else {
+                            currentBbox.data = new Array();
+                            dragStart = false;
+                            dragged = false;
                         }
                 }
             }
