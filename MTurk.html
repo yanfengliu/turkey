@@ -102,7 +102,7 @@
     <p id="buttons">
         <input class="btn btn-info fixed_width" id="mode_button" type="button" value = "Dot Mode" />
         <span id="delete_flip", class="btn-group btn-group-toggle" data-toggle="buttons">
-            <label class="btn btn-outline-secondary disabled" type="radio" name="options" id="delete_button" autocomplete="off" checked> Delete </label>
+            <label class="btn btn-outline-secondary" type="radio" name="options" id="delete_button" autocomplete="off" checked> Delete </label>
             <label class="btn btn-primary" type="radio" name="options" id="annotate_button" autocomplete="off"> Annotate </label>
         </span>
         <input class="btn btn-secondary" id="undo_button" type="button" value = "Undo" />
@@ -186,17 +186,14 @@
             annotations_str = annotations_str.replace(/'/g, '"');
             annotations_str = annotations_str.replace(/;/g, ',');
             annotations = JSON.parse(annotations_str);
-            annotationsChanged();
         }
 
         annotations.push = function(obj) {
             Array.prototype.push.call(annotations, obj);
-            annotationsChanged();
         }
 
         annotations.splice = function(idx, numElements) {
             Array.prototype.splice.call(annotations, idx, numElements);
-            annotationsChanged();
         }
 
         var mode_data = "${annotation_mode}";
@@ -243,8 +240,8 @@
         $("#reposition_button").click(reposition);
         $("#undo_button"      ).click(undo);
         $("#mode_button"      ).click(toggleMode);
-        $("#delete_button"    ).click(setDeleteMode);
-        $("#annotate_button"  ).click(setDeleteMode);
+        $("#delete_button"    ).click(() => setDeleteMode(true));
+        $("#annotate_button"  ).click(() => setDeleteMode(false));
 
         document.getElementById("submitButton").disabled = false;
         document.getElementById("buttons").appendChild(document.getElementById("submitButton"));
@@ -410,12 +407,8 @@
         }
 
         function setDeleteMode(deleteMode) {
-            if( deleteMode == true && $("#delete_button").hasClass("disabled"))
-            {
-                return;
-            }
-            
             delete_mode = deleteMode;
+            console.log(delete_mode);
             if (delete_mode == false) {
                 // annotate mode
                 canvas.style.cursor = "crosshair";
@@ -737,16 +730,6 @@
 
     function deep_copy(obj){
         return jQuery.extend(true, {}, obj);
-    }
-
-    var annotationsChanged = function()
-    {
-        if(annotations.length == 0)
-        {
-            $("#delete_button").addClass("disabled");
-        } else {
-            $("#delete_button").removeClass("disabled");
-        }
     }
 
     function capitalize(string) {
