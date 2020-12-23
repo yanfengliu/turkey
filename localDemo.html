@@ -24,58 +24,87 @@
     SOFTWARE.
  -->
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
     <title>Turkey Local Demo</title>
-</head>
+  </head>
 
-<body style="margin:10px">
-    <div style="margin: 0 auto; width: 1000px; display:inline-block;vertical-align:top;">
-        <div id="container">
-            If you don't see anything here, make sure to start Chrome with the <pre>--allow-file-access-from-files</pre> flag 
-            (or the equivalent configuration for the browser of your choice). This will allow this wrapper page to load MTurk.html.
-        </div>
-        
-        <button class="btn btn-success" id="submitButton">Submit</button>
-        <h2 style="visibility: hidden" id="outputLabel">Output</h2>
-        <div style="font-family:monospace" id="output"></div>
-        
+  <body style="margin: 10px">
+    <div
+      style="
+        margin: 0 auto;
+        width: 1000px;
+        display: inline-block;
+        vertical-align: top;
+      "
+    >
+      <div id="container">
+        If you don't see anything here, make sure to start Chrome with the
+        <pre>--allow-file-access-from-files</pre>
+        flag (or the equivalent configuration for the browser of your choice).
+        This will allow this wrapper page to load MTurk.html.
+      </div>
+
+      <button
+        class="btn btn-success"
+        data-testid="submitButton"
+        id="submitButton"
+      >
+        Submit
+      </button>
+      <h2 style="visibility: hidden" data-testid="outputLabel" id="outputLabel">
+        Output
+      </h2>
+      <div
+        style="font-family: monospace"
+        data-testid="output"
+        id="output"
+      ></div>
     </div>
     <script>
-        var req = new XMLHttpRequest();
-        req.onload = function(e) 
-        {
-            document.getElementById("container").innerHTML = e.target.response;
-            document.getElementById("pic").src = "https://i.imgur.com/T9cqo2v.jpg";
-            document.getElementById("title").innerText="Click for Instructions";
-            eval(document.getElementById("turkey").innerHTML);
-            document.getElementById("pic").onload = function() {start(); }
-            document.getElementById("submitButton").addEventListener("click", function(e) {
-                document.getElementById("outputLabel").style.visibility = "visible";
-                document.getElementById("output").innerHTML = JSON.stringify(annotations); 
-            });
+      var req = new XMLHttpRequest();
+      req.onload = function (e) {
+        document.getElementById("container").innerHTML = e.target.response;
+        document.getElementById("pic").src = "https://i.imgur.com/T9cqo2v.jpg";
+        document.getElementById("title").innerText = "Click for Instructions";
+        eval(document.getElementById("turkey").innerHTML);
+        document.getElementById("pic").onload = function () {
+          start();
+        };
+        document
+          .getElementById("submitButton")
+          .addEventListener("click", function (e) {
+            document.getElementById("outputLabel").style.visibility = "visible";
+            document.getElementById("output").innerHTML = JSON.stringify(
+              annotations
+            );
+          });
 
-            document.getElementById("reset_button").addEventListener("click", function(e) {
-                document.getElementById("outputLabel").style.visibility = "hidden";
-                document.getElementById("output").innerHTML = ""; 
-            });
-        }
+        document
+          .getElementById("reset_button")
+          .addEventListener("click", function (e) {
+            document.getElementById("outputLabel").style.visibility = "hidden";
+            document.getElementById("output").innerHTML = "";
+          });
+      };
 
-        // load the current version directly from GitHub
-        // req.open("GET", "https://raw.githubusercontent.com/yanfengliu/turkey/master/MTurk.html");
-        
-        /* Use the following request instead if you want to load the local version. 
-         * Note that you will need to disable cross-site scripting protection 
-         * to load local HTML files through JSON requests */
-        
-         req.open("GET", "MTurk.html"); 
-        
-        req.send();
-        
+      // load the current version directly from GitHub
+      // req.open("GET", "https://raw.githubusercontent.com/yanfengliu/turkey/master/MTurk.html");
+
+      /* Use the following request instead if you want to load the local version.
+       * Note that you will need to disable cross-site scripting protection
+       * to load local HTML files through JSON requests */
+
+      req.open("GET", "MTurk.html");
+
+      req.send();
     </script>
-</body>
+  </body>
 </html>
