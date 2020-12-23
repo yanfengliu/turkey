@@ -24,784 +24,955 @@
     SOFTWARE.
  -->
 
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
-    crossorigin="anonymous">
-<link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU"
-    rel="stylesheet" />
+<link
+  rel="stylesheet"
+  href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+  integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+  crossorigin="anonymous"
+/>
+<link
+  crossorigin="anonymous"
+  href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+  integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU"
+  rel="stylesheet"
+/>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <style>
-    #parent {
-        width: 1000px; 
-        height: auto;
-        overflow: hidden;
-        position: relative;
-        background:#f5f5f5;
-    }
+  #parent {
+    width: 1000px;
+    height: auto;
+    overflow: hidden;
+    position: relative;
+    background: #f5f5f5;
+  }
 
-    #child{
-        margin: auto;
-    }
+  #child {
+    margin: auto;
+  }
 
-    #myCanvas {
-        position: absolute;
-    }
+  #myCanvas {
+    position: absolute;
+  }
 
-    #pic{
-        width: 100%;
-        height: auto;
-    }
+  #pic {
+    width: 100%;
+    height: auto;
+  }
 
-    #text {
-        width: 1000px;
-    }
+  #text {
+    width: 1000px;
+  }
 
-    .btn:hover {
-        text-shadow:0px 0px 1px black;
-    }
+  .btn:hover {
+    text-shadow: 0px 0px 1px black;
+  }
 
-    .fixed_width {
-        width: 130px !important;
-    }
+  .fixed_width {
+    width: 130px !important;
+  }
 
-    #class {
-        width: 200px;
-        float:right;
-    }
+  #label_class {
+    width: 200px;
+    float: right;
+  }
 
-    #text {
-        margin-bottom: 20px;
-    }
+  #text {
+    margin-bottom: 20px;
+  }
 
-    #buttons {
-        margin-top: 20px;
-    }
+  #buttons {
+    margin-top: 20px;
+  }
 </style>
 
-<div id="text" style="display:inline-block;vertical-align:top;">
-    <button id="title" type="button" class="btn btn-outline-primary btn-lg">Instructions</button>
-    <select id="class" class="form-control"></select>
-    <ul id="instruction">
-        <li>Hold <strong>right click</strong> to draw the image.</li>
-        <li><strong>Left click</strong> to annotate the image using up to three modes:</li>
-        <ul>
-            <li><strong>Dot mode</strong> indicates the location of the object with one left click. </li>
-            <li><strong>Link mode</strong> indicates head (1st click) and tail (2nd click).</li>
-            <li><strong>Polygon mode</strong> draws the segmentation mask of the object.</li>
-            <li><strong>Bbox mode</strong> draws the bounding box of the object by holding down left click. </li>
-        </ul>
-        <li>The <strong>Mode toggle</strong> button indicates the current mode</li>
-        <li>Press <strong>CTRL+Z</strong> or click the <strong>Undo</strong> button to undo last deletion/annotation.</li>
-        <li>Press <strong>C</strong> to close polygon in polygon mode.</li>
-        <li>Click <strong>Delete/Annotate</strong> flip switch or press <strong>D</strong> to toggle between deleting and annotating.</li>
-        <li>Click the <strong>Undo</strong> button to undo your last deletion/annotation depending on your current mode.</li>
-        <li>Click the <strong>Reset</strong> button to clear all annotations.</li>
-        <li>Click the <strong>Reposition</strong> button to center the image and reset zoom.</li>
-        <li>Click the <strong>Submit</strong> button to finish current task.</li>
+<div
+  data-testid="text"
+  id="text"
+  style="display: inline-block; vertical-align: top"
+>
+  <button
+    data-testid="title"
+    id="title"
+    type="button"
+    class="btn btn-outline-primary btn-lg"
+  >
+    Click for Instructions
+  </button>
+  <select data-testid="label_class" id="label_class" class="form-control"></select>
+  <ul data-testid="instruction" id="instruction">
+    <li>Hold <strong>right click</strong> to draw the image.</li>
+    <li>
+      <strong>Left click</strong> to annotate the image using up to three modes:
+    </li>
+    <ul>
+      <li>
+        <strong>Dot mode</strong> indicates the location of the object with one
+        left click.
+      </li>
+      <li>
+        <strong>Link mode</strong> indicates head (1st click) and tail (2nd
+        click).
+      </li>
+      <li>
+        <strong>Polygon mode</strong> draws the segmentation mask of the object.
+      </li>
+      <li>
+        <strong>Bbox mode</strong> draws the bounding box of the object by
+        holding down left click.
+      </li>
     </ul>
+    <li>The <strong>Mode toggle</strong> button indicates the current mode</li>
+    <li>
+      Press <strong>CTRL+Z</strong> or click the <strong>Undo</strong> button to
+      undo last deletion/annotation.
+    </li>
+    <li>Press <strong>C</strong> to close polygon in polygon mode.</li>
+    <li>
+      Click <strong>Delete/Annotate</strong> flip switch or press
+      <strong>D</strong> to toggle between deleting and annotating.
+    </li>
+    <li>
+      Click the <strong>Undo</strong> button to undo your last
+      deletion/annotation depending on your current mode.
+    </li>
+    <li>Click the <strong>Reset</strong> button to clear all annotations.</li>
+    <li>
+      Click the <strong>Reposition</strong> button to center the image and reset
+      zoom.
+    </li>
+    <li>Click the <strong>Submit</strong> button to finish current task.</li>
+  </ul>
 
-    <p id="buttons">
-        <input class="btn btn-info fixed_width" id="mode_button" type="button" value = "Dot Mode" />
-        <span id="delete_flip", class="btn-group btn-group-toggle" data-toggle="buttons">
-            <label class="btn btn-outline-secondary" type="radio" name="options" id="delete_button" autocomplete="off" checked> Delete </label>
-            <label class="btn btn-primary" type="radio" name="options" id="annotate_button" autocomplete="off"> Annotate </label>
-        </span>
-        <input class="btn btn-secondary" id="undo_button" type="button" value = "Undo" />
-        <input class="btn btn-danger" id="reset_button" type="button" value = "Reset" />
-        <input class="btn btn-warning" id="reposition_button" type="button" value = "Reposition" />
-    </p>
+  <p data-testid="buttons" id="buttons">
+    <input
+      data-testid="mode_button"
+      class="btn btn-info fixed_width"
+      id="mode_button"
+      type="button"
+      value="Dot Mode"
+    />
+    <span
+      id="delete_flip"
+      data-testid="delete_flip"
+      class="btn-group btn-group-toggle"
+      data-toggle="buttons"
+    >
+      <label
+        class="btn btn-outline-secondary"
+        type="radio"
+        name="options"
+        data-testid="delete_button"
+        id="delete_button"
+        autocomplete="off"
+        checked
+      >
+        Delete
+      </label>
+      <label
+        class="btn btn-primary"
+        type="radio"
+        name="options"
+        data-testid="annotate_button"
+        id="annotate_button"
+        autocomplete="off"
+      >
+        Annotate
+      </label>
+    </span>
+    <input
+      class="btn btn-secondary"
+      data-testid="undo_button"
+      id="undo_button"
+      type="button"
+      value="Undo"
+    />
+    <input
+      class="btn btn-danger"
+      data-testid="reset_button"
+      id="reset_button"
+      type="button"
+      value="Reset"
+    />
+    <input
+      class="btn btn-warning"
+      data-testid="reposition_button"
+      id="reposition_button"
+      type="button"
+      value="Reposition"
+    />
+  </p>
 
-    <p>
-        <label for="transparency">Transparency percentage</label>
-        <input type="range" min="0" max="100" class="range-field my-4 w-25" id="transparency_slider">
-    </p>
+  <p>
+    <label for="transparency">Transparency percentage</label>
+    <input
+      type="range"
+      min="0"
+      max="100"
+      class="range-field my-4 w-25"
+      data-testid="transparency_slider"
+      id="transparency_slider"
+    />
+  </p>
 
-    <div>
-        <!-- Coordinates input from user -->
-        <input id="coordinates" name="coordinates" type="hidden" />
-    </div>
+  <div>
+    <input id="coordinates" name="coordinates" type="hidden" />
+  </div>
 </div>
 
 <div id="parent">
-    <div id="child">
-        <canvas id="myCanvas">
-        </canvas>
-        <img id="pic" src="${img_url}" />
-    </div>
+  <div id="child">
+    <canvas data-testid="canvas" id="myCanvas"></canvas>
+    <img data-testid="pic" id="pic" src="${img_url}" />
+  </div>
 </div>
 
 <script id="turkey" type="text/javascript">
-    var translateX, translateY, correctX, correctY;
-    var anchorX, anchorY, dragX, dragY, mouseX, mouseY;
-    var dragged, dragStart, delta, scaleRatio, scaleDiff;
-    var child, parent, canvas, ctx, img;
-    var annotations, modes, classSelection;
-    var transparency_level = 0.5;
-    var dragOffsetX = 0;
-    var dragOffsetY = 0;
-    var scalingOffsetX = 0;
-    var scalingOffsetY = 0;
-    var oldScale = 1.0;
-    var newScale = 1.0;
-    var firstPoint = true;
-    var mode = "";
-    var modeNum = 0;
-    var dotSize = 4;
-    var scaleTransform = 1;
-    var translateTransform = [0, 0];
-    var translateTransform_raw = [0, 0];
-    var delete_mode = false;
-    var delete_idx = -1;
-    var trashcan = new Array();
-    var colors = {};
-    var timeDownUp = null;
-    var rightClick = false;
+  var translateX, translateY, correctX, correctY;
+  var anchorX, anchorY, dragX, dragY, mouseX, mouseY;
+  var dragged, dragStart, delta, scaleRatio, scaleDiff;
+  var child, parent, canvas, ctx, img;
+  var annotations, modes, classSelection;
+  var transparency_level = 0.5;
+  var dragOffsetX = 0;
+  var dragOffsetY = 0;
+  var scalingOffsetX = 0;
+  var scalingOffsetY = 0;
+  var oldScale = 1.0;
+  var newScale = 1.0;
+  var firstPoint = true;
+  var mode = "";
+  var modeNum = 0;
+  var dotSize = 4;
+  var scaleTransform = 1;
+  var translateTransform = [0, 0];
+  var translateTransform_raw = [0, 0];
+  var delete_mode = false;
+  var delete_idx = -1;
+  var trashcan = new Array();
+  var colors = {};
+  var timeDownUp = null;
+  var rightClick = false;
 
-    var currentLink    = { 'class': [], 'mode': 'link', 'data': [] };
-    var currentPolygon = { 'class': [], 'mode': 'polygon', 'data': [] };
-    var currentBbox    = { 'class': [], 'mode': 'bbox', 'data': [] };
+  var currentLink = { class: [], mode: "link", data: [] };
+  var currentPolygon = { class: [], mode: "polygon", data: [] };
+  var currentBbox = { class: [], mode: "bbox", data: [] };
 
-    var start = function () {
-        parent = document.getElementById("parent");
-        child = document.getElementById("child");
-        canvas = document.getElementById("myCanvas");
-        ctx = canvas.getContext("2d");
-        img = document.getElementById("pic");
-        modeButton = document.getElementById("mode_button");
+  var start = function () {
+    parent = document.getElementById("parent");
+    child = document.getElementById("child");
+    canvas = document.getElementById("myCanvas");
+    ctx = canvas.getContext("2d");
+    img = document.getElementById("pic");
+    modeButton = document.getElementById("mode_button");
 
-        canvas.width = img.width;
-        canvas.height = img.height;
-        canvas.style.cursor = "crosshair";
-        
-        $('#instruction').slideUp(1000);
+    canvas.width = img.width;
+    canvas.height = img.height;
+    canvas.style.cursor = "crosshair";
 
-        $('#title').click(function () {
-            $('#instruction').clearQueue();
-            $('#instruction').slideToggle();
-        });
+    $("#instruction").slideUp(0);
 
-        annotations_str = "${annotations}"
-        if (annotations_str == ("$" + "{annotations}")){
-            annotations = [];
-        } else {
-            annotations_str = annotations_str.replace(/'/g, '"');
-            annotations_str = annotations_str.replace(/;/g, ',');
-            annotations = JSON.parse(annotations_str);
-        }
+    $("#title").click(function () {
+      $("#instruction").clearQueue();
+      $("#instruction").slideToggle();
+    });
 
-        annotations.push = function(obj) {
-            Array.prototype.push.call(annotations, obj);
-        }
-
-        annotations.splice = function(idx, numElements) {
-            Array.prototype.splice.call(annotations, idx, numElements);
-        }
-
-        var mode_data = "${annotation_mode}";
-        if (mode_data == ("$" + "{annotation_mode}")) // running in local demo mode
-        {
-            mode_data = "dot-link-polygon-bbox";
-        }
-        modes = mode_data.split('-');
-        mode = modes[0];
-        modeButton.value = 'Mode: ' + capitalize(mode);
-
-        // generate select list options
-        classSelection = document.getElementById("class");
-        var classes_data = "${classes}";
-        if (classes_data == ("$" + "{classes}")) // running in local demo mode
-        {
-            classes_data = "person-tree-house";
-        }
-        classes = classes_data.split('-');
-
-        // populate list items and generate unique colors based on string hash
-        classes.forEach((theClass) => {
-            var option = document.createElement("option");
-            var hue = Math.abs(theClass.hashCode() % 360) / 360;
-            var color = [hue, 1.0, 1.0];
-            option.innerHTML = theClass;
-            classSelection.appendChild(option);
-            colors[theClass] = color;
-        });
-
-        classSelection.size = Math.min(10, classes.length);
-        classSelection.selectedIndex = 0;
-        updateGraphics();
-
-        //initialize slider
-        var slider = document.getElementById('transparency_slider')
-        slider.oninput = function() {
-            transparency_level = this.value / 100.0;
-            updateGraphics();
-        };
-
-        //initialize buttons
-        $("#reset_button"     ).click(reset);
-        $("#reposition_button").click(reposition);
-        $("#undo_button"      ).click(undo);
-        $("#mode_button"      ).click(toggleMode);
-        $("#delete_button"    ).click(() => setDeleteMode(true));
-        $("#annotate_button"  ).click(() => setDeleteMode(false));
-
-        document.getElementById("submitButton").disabled = false;
-        document.getElementById("buttons").appendChild(document.getElementById("submitButton"));
-
-        child.addEventListener('DOMMouseScroll', handleScroll, false);
-        child.addEventListener('mousewheel', handleScroll, false);
-
-        // disable right click context menu on canvas
-        canvas.oncontextmenu = function ()
-        {
-            return false;
-        }
-
-        canvas.addEventListener('mouseout', function(evt) {
-            dragStart = false;
-            dragged = false; 
-        });
-
-        canvas.addEventListener('pointerdown', function (evt) {
-            rightClick = evt.which == 3;
-            getCorrectCoords(evt);
-            timeDownUp = new Date().getTime();
-            anchorX = evt.clientX;
-            anchorY = evt.clientY;
-            dragged = false;
-            dragStart = true;
-            if (mode == "bbox" && !rightClick && !getDeleteMode()){
-                currentBbox.class = getClass();
-                currentBbox.data = new Array();
-                currentBbox.data.push([correctX, correctY]);
-            }
-        });
-
-        canvas.addEventListener('pointerup', function (evt) {
-            timeDownUp = new Date().getTime();
-            getCorrectCoords(evt);
-            if (dragged) {
-                if (mode == "bbox" && !rightClick) {
-                    currentBbox.data.push([correctX, correctY]);
-                    if (currentBbox.data.length == 2){
-                        annotations.push(Object.assign({}, currentBbox));
-                    }
-                    currentBbox.data = new Array();
-                }
-            } else {
-                if (!rightClick){
-                    if (getDeleteMode() == true) {
-                        deleteAnnotation();
-                    } else {
-                        updateAnnotation();
-                    }
-                } else {
-                    currentBbox.data = new Array();
-                }
-            }
-
-            rightClick = false;
-            dragStart = false;
-            updateGraphics();
-
-            if (annotations.length == 0) {
-                document.getElementById('coordinates').value = '';
-            } else {
-                document.getElementById('coordinates').value = JSON.stringify(annotations);
-            }
-        });
-
-        canvas.addEventListener('mousemove', function (evt) {
-            getCorrectCoords(evt);
-            if (getDeleteMode() == true) {
-                delete_idx = getDeleteIdx();
-                updateGraphics();
-            } else if (rightClick) {
-                var timeMove = new Date().getTime();
-                if (timeMove > timeDownUp) {
-                    if (dragStart) {
-                        dragged = true;
-                        dragX = evt.clientX - anchorX;
-                        dragY = evt.clientY - anchorY;
-                        translateTransform_raw = [translateTransform_raw[0] + dragX, translateTransform_raw[1] + dragY];
-                        translateTransform[0] = translateTransform_raw[0] / newScale;
-                        translateTransform[1] = translateTransform_raw[1] / newScale;
-                        updateTransform();
-                        dragOffsetX += dragX;
-                        dragOffsetY += dragY;
-                        anchorX = evt.clientX;
-                        anchorY = evt.clientY;
-                    }
-                } else {
-                    timeDownUp = null;
-                }
-            } else if (mode == "bbox" && dragStart) {
-                dragged = true;
-                updateGraphics();
-            } else if (mode == "link") {
-                updateGraphics();
-            }
-        });
-
-        function drawPolygonOutline(corners) {
-            for (var j = 0; j < corners.length; j++) {
-                ctx.fillRect(corners[j][0] - dotSize / 2, corners[j][1] - dotSize / 2, dotSize, dotSize);
-            }
-            ctx.beginPath();
-            ctx.moveTo(corners[0][0], corners[0][1]);
-            for (var j = 1; j < corners.length; j++) {
-                ctx.lineTo(corners[j][0], corners[j][1]);
-                ctx.stroke();
-            }
-            ctx.stroke();
-            ctx.closePath();
-        }
-
-        function fillPolygon(corners) {
-            ctx.beginPath();
-            ctx.moveTo(corners[0][0], corners[0][1]);
-            for (var j = 1; j < corners.length; j++) {
-                ctx.lineTo(corners[j][0], corners[j][1]);
-                ctx.stroke();
-            }
-            ctx.lineTo(corners[0][0], corners[0][1]);
-            ctx.stroke();
-            ctx.closePath();
-            ctx.fill();
-        }
-
-        function toggleMode() {
-            modeNum += 1;
-            if (modeNum >= modes.length) {
-                modeNum = 0;
-            }
-            setDeleteMode(false);
-            mode = modes[modeNum];
-            modeButton.value = 'Mode: ' + capitalize(mode);
-            clearCurrentAnn();
-        }
-
-        function clearCurrentAnn() {
-            currentBbox.data = new Array();
-            currentLink.data = new Array();
-            currentPolygon.data = new Array();
-        }
-
-        function deleteAnnotation() {
-            if (delete_idx > -1) {
-                var ann_copy = deep_copy(annotations[delete_idx]);
-                trashcan.push(ann_copy);
-                annotations.splice(delete_idx, 1);
-                delete_idx = getDeleteIdx();
-                if(annotations.length == 0)
-                    // no more to delete, go back to annotate mode
-                    setDeleteMode(false);
-            }
-        }
-
-        function toggleDelete () {
-            setDeleteMode(!getDeleteMode());
-        }
-
-        function getDeleteMode()
-        {
-            return delete_mode;
-        }
-
-        function setDeleteMode(deleteMode) {
-            delete_mode = deleteMode;
-            console.log(delete_mode);
-            if (delete_mode == false) {
-                // annotate mode
-                canvas.style.cursor = "crosshair";
-                $("#delete_button").removeClass('btn-primary');
-                $("#delete_button").addClass('btn-outline-secondary');
-
-                $("#annotate_button").removeClass('btn-outline-secondary');
-                $("#annotate_button").addClass('btn-primary');
-                updateGraphics();
-            } else {
-                // delete mode
-                delete_idx = getDeleteIdx();
-                canvas.style.cursor = "pointer";
-                $("#annotate_button").removeClass('btn-primary');
-                $("#annotate_button").addClass('btn-outline-secondary');
-
-                $("#delete_button").removeClass('btn-outline-secondary');
-                $("#delete_button").addClass('btn-primary');
-                updateGraphics();
-            }
-
-        }
-
-        function reset() {
-            clearAnnotations();
-            reposition();
-            firstPoint = true;
-            dragStart = false;
-            dragged = false;
-            setDeleteMode(false);
-        }
-
-        function reposition() {
-            child.style.transform = "";
-            scaleTransform = 1.0;
-            translateTransform = [0, 0];
-            translateTransform_raw = [0, 0];
-            newScale = 1.0;
-            oldScale = 1.0;
-            scaleRatio = 1.0;
-            scaleDiff = 0;
-            dragOffsetX = 0;
-            dragOffsetY = 0;
-            scalingOffsetX = 0;
-            scalingOffsetY = 0;
-        }
-
-        function updateAnnotation() {
-            switch (mode) {
-                case "dot": // dot mode
-                    annotations.push({ 'class': getClass(), 'mode': 'dot', 'data': [correctX, correctY] });
-                    break;
-                case "link": // link mode
-                    currentLink.class = getClass();
-                    currentLink.data.push([correctX, correctY]);
-                    if (firstPoint) {
-                        firstPoint = false;
-                    } else {
-                        annotations.push(Object.assign({}, currentLink));
-                        currentLink.data = new Array();
-                        firstPoint = true;
-                    }
-                    break;
-                case "polygon": // polygon mode
-                    currentPolygon.class = getClass();
-                    currentPolygon.data.push([correctX, correctY]);
-            }
-        }
-
-        function clearAnnotations() {
-            annotations = new Array();
-            trashcan = new Array();
-            currentLink = { 'class': [], 'mode': 'link', 'data': [] };
-            currentPolygon = { 'class': [], 'mode': 'polygon', 'data': [] };
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function getClass() {
-            return classSelection[classSelection.selectedIndex].innerHTML;
-        }
-
-        // Redraw all annotations
-        function updateGraphics() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (var i = 0; i < annotations.length; i++) {
-                var ann = annotations[i];
-                var corners = ann.data;
-                var r, g, b;
-                if (getDeleteMode() == true && delete_idx == i) {
-                    r = g = b = 0.5;
-                } else {
-                    [r, g, b] = getColor(ann);
-                }
-                switch (ann.mode) {
-                    case "dot":
-                        ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
-                        ctx.fillRect(corners[0] - dotSize / 2, corners[1] - dotSize / 2, dotSize, dotSize);
-                        break;
-                    case "link":
-                        // draw complete links
-                        ctx.fillStyle   = "rgba(" + r + "," + g + "," + b + ", 1.0)";
-                        ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
-                        ctx.beginPath();
-                        ctx.moveTo(corners[0][0], corners[0][1]);
-                        ctx.lineTo(corners[1][0], corners[1][1]);
-                        ctx.closePath();
-                        ctx.stroke();
-                        ctx.fillRect(corners[0][0] - dotSize / 2, corners[0][1] - dotSize / 2, dotSize, dotSize);
-                        ctx.fillRect(corners[1][0] - dotSize / 2, corners[1][1] - dotSize / 2, dotSize, dotSize);
-                        break;
-                    case "polygon":
-                        // draw complete polygons
-                        ctx.fillStyle   = "rgba(" + r + "," + g + "," + b + ", " + transparency_level + ")";
-                        ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
-                        fillPolygon(corners);
-                        break;
-                    case "bbox":
-                        ctx.fillStyle   = "rgba(1, 1, 1, 0)";
-                        ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
-                        var xmin = ann.data[0][0];
-                        var ymin = ann.data[0][1];
-                        var xmax = ann.data[1][0];
-                        var ymax = ann.data[1][1];
-                        var corners = [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]];
-                        fillPolygon(corners);
-                }
-            }
-
-            // draw current link
-            if (currentLink.data.length != 0) {
-                var r, g, b;
-                [r, g, b] = getColor(currentLink);
-                ctx.fillStyle   = "rgba(" + r + "," + g + "," + b + ", 1.0)";
-                ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
-                var dot = currentLink.data;
-                ctx.fillRect(dot[0][0] - dotSize / 2, dot[0][1] - dotSize / 2, dotSize, dotSize);
-                ctx.beginPath();
-                ctx.moveTo(dot[0][0], dot[0][1]);
-                ctx.lineTo(correctX, correctY);
-                ctx.closePath();
-                ctx.stroke();
-            }
-
-            // draw current polygon
-            if (currentPolygon.data.length != 0) {
-                var r, g, b;
-                [r, g, b] = getColor(currentPolygon);
-                ctx.fillStyle   = "rgba(" + r + "," + g + "," + b + ", " + transparency_level + ")";
-                ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
-                var corners = currentPolygon.data;
-                drawPolygonOutline(corners);
-            }
-
-            // draw current bbox
-            if (currentBbox.data.length != 0){
-                var r, g, b;
-                [r, g, b] = getColor(currentBbox);
-                ctx.fillStyle   = "rgba(1, 1, 1, 0)";
-                ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
-                var xmin = currentBbox.data[0][0];
-                var ymin = currentBbox.data[0][1];
-                var xmax = correctX;
-                var ymax = correctY;
-                var corners = [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]];
-                fillPolygon(corners);
-            }
-        }
-
-        // depending on mode, either undo deletion or undo annotation
-        function undo() {
-            if (getDeleteMode() == true){
-                if (trashcan.length > 0) {
-                    annotations.push(trashcan.pop());
-                }
-            } else {
-                switch (mode) {
-                    case "dot":
-                        annotations.pop();
-                        break;
-                    case "link":
-                        if (currentLink.data.length == 0) {
-                            annotations.pop();
-                        } else {
-                            currentLink.data = new Array();
-                            firstPoint = true;
-                        }
-                        break;
-                    case "polygon":
-                        if (currentPolygon.data.length == 0) {
-                            annotations.pop();
-                        } else {
-                            currentPolygon.data.pop();
-                        }
-                        break;
-                    case "bbox":
-                        if (currentBbox.data.length == 0){
-                            annotations.pop();
-                        } else {
-                            currentBbox.data = new Array();
-                            dragStart = false;
-                            dragged = false;
-                        }
-                }
-            }
-            updateGraphics();
-        }
-
-        window.addEventListener("keydown", function (evt) {
-            // Press E for "Mode toggle"
-            if (evt.key == 'e') {
-                toggleMode();
-            }
-
-            // Press ctrl + Z for "Undo"
-            if ((evt.key == 'z') && (evt.ctrlKey)) {
-                undo();
-            }
-
-            // Press D for "Delete"
-            if ((evt.key == 'd')) {
-                toggleDelete();
-            }
-
-            // Press C for "Close Polygon"
-            if (evt.key == 'c') {
-                if (currentPolygon.data.length > 2) {
-                    currentPolygon.class = getClass();
-                    annotations.push(Object.assign({}, currentPolygon));
-                    currentPolygon.data = new Array();
-                }
-                // Update coordinates
-                if (annotations.length == 0) {
-                    document.getElementById('coordinates').value = '';
-                } else {
-                    document.getElementById('coordinates').value = JSON.stringify(annotations);
-                }
-            }
-            updateGraphics();
-        }, true);
+    annotations_str = "${annotations}";
+    if (annotations_str == "$" + "{annotations}") {
+      annotations = [];
+    } else {
+      annotations_str = annotations_str.replace(/'/g, '"');
+      annotations_str = annotations_str.replace(/;/g, ",");
+      annotations = JSON.parse(annotations_str);
     }
 
-    window.onload = function () {
-        start();
-    }
-
-    var handleScroll = function (evt) {
-        getCorrectCoords(evt);
-        delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
-
-        newScale += delta / 10;
-        newScale = Math.max(newScale, 1.0);
-        newScale = Math.min(newScale, 5.0);
-        scaleRatio = newScale / oldScale;
-        scaleDiff = newScale - oldScale;
-        oldScale = scaleTransform = newScale;
-
-        scalingOffsetX = (newScale - 1) * parent.offsetWidth / 2;
-        scalingOffsetY = (newScale - 1) * parent.offsetHeight / 2;
-
-        translateTransform_raw[0] -= (correctX - parent.offsetWidth / 2) * scaleDiff;
-        translateTransform_raw[1] -= (correctY - parent.offsetHeight / 2) * scaleDiff;
-
-        translateTransform[0] = translateTransform_raw[0] / newScale;
-        translateTransform[1] = translateTransform_raw[1] / newScale;
-        updateTransform();
+    annotations.push = function (obj) {
+      Array.prototype.push.call(annotations, obj);
     };
 
-    function updateTransform() {
-        child.style.transform = "";
-        child.style.transform += 'scale(' + scaleTransform + ', ' + scaleTransform + ')';
-        child.style.transform += 'translate(' + translateTransform[0] + 'px, ' + translateTransform[1] + 'px)';
+    annotations.splice = function (idx, numElements) {
+      Array.prototype.splice.call(annotations, idx, numElements);
+    };
+
+    var mode_data = "${annotation_mode}";
+    if (mode_data == "$" + "{annotation_mode}") {
+      // running in local demo mode
+      mode_data = "dot-link-polygon-bbox";
+    }
+    modes = mode_data.split("-");
+    mode = modes[0];
+    modeButton.value = "Mode: " + capitalize(mode);
+
+    // generate select list options
+    classSelection = document.getElementById("label_class");
+    var classes_data = "${classes}";
+    if (classes_data == "$" + "{classes}") {
+      // running in local demo mode
+      classes_data = "tree-person-house";
+    }
+    classes = classes_data.split("-");
+
+    // populate list items and generate unique colors based on string hash
+    classes.forEach((theClass) => {
+      var option = document.createElement("option");
+      var hue = Math.abs(theClass.hashCode() % 360) / 360;
+      var color = [hue, 1.0, 1.0];
+      option.innerHTML = theClass;
+      classSelection.appendChild(option);
+      colors[theClass] = color;
+    });
+
+    classSelection.size = Math.min(10, classes.length);
+    classSelection.selectedIndex = 0;
+    updateGraphics();
+
+    //initialize slider
+    var slider = document.getElementById("transparency_slider");
+    slider.oninput = function () {
+      transparency_level = this.value / 100.0;
+      updateGraphics();
+    };
+
+    //initialize buttons
+    $("#reset_button").click(reset);
+    $("#reposition_button").click(reposition);
+    $("#undo_button").click(undo);
+    $("#mode_button").click(toggleMode);
+    $("#delete_button").click(() => setDeleteMode(true));
+    $("#annotate_button").click(() => setDeleteMode(false));
+
+    document.getElementById("submitButton").disabled = false;
+    document
+      .getElementById("buttons")
+      .appendChild(document.getElementById("submitButton"));
+
+    child.addEventListener("DOMMouseScroll", handleScroll, false);
+    child.addEventListener("mousewheel", handleScroll, false);
+
+    // disable right click context menu on canvas
+    canvas.oncontextmenu = function () {
+      return false;
+    };
+
+    canvas.addEventListener("mouseout", function (evt) {
+      dragStart = false;
+      dragged = false;
+    });
+
+    canvas.addEventListener("pointerdown", function (evt) {
+      rightClick = evt.which == 3;
+      getCorrectCoords(evt);
+      timeDownUp = new Date().getTime();
+      anchorX = evt.clientX;
+      anchorY = evt.clientY;
+      dragged = false;
+      dragStart = true;
+      if (mode == "bbox" && !rightClick && !getDeleteMode()) {
+        currentBbox.class = getClass();
+        currentBbox.data = new Array();
+        currentBbox.data.push([correctX, correctY]);
+      }
+    });
+
+    canvas.addEventListener("pointerup", function (evt) {
+      timeDownUp = new Date().getTime();
+      getCorrectCoords(evt);
+      if (dragged) {
+        if (mode == "bbox" && !rightClick) {
+          currentBbox.data.push([correctX, correctY]);
+          if (currentBbox.data.length == 2) {
+            annotations.push(Object.assign({}, currentBbox));
+          }
+          currentBbox.data = new Array();
+        }
+      } else {
+        if (!rightClick) {
+          if (getDeleteMode() == true) {
+            deleteAnnotation();
+          } else {
+            updateAnnotation();
+          }
+        } else {
+          currentBbox.data = new Array();
+        }
+      }
+
+      rightClick = false;
+      dragStart = false;
+      updateGraphics();
+
+      if (annotations.length == 0) {
+        document.getElementById("coordinates").value = "";
+      } else {
+        document.getElementById("coordinates").value = JSON.stringify(
+          annotations
+        );
+      }
+    });
+
+    canvas.addEventListener("mousemove", function (evt) {
+      getCorrectCoords(evt);
+      if (getDeleteMode() == true) {
+        delete_idx = getDeleteIdx();
+        updateGraphics();
+      } else if (rightClick) {
+        var timeMove = new Date().getTime();
+        if (timeMove > timeDownUp) {
+          if (dragStart) {
+            dragged = true;
+            dragX = evt.clientX - anchorX;
+            dragY = evt.clientY - anchorY;
+            translateTransform_raw = [
+              translateTransform_raw[0] + dragX,
+              translateTransform_raw[1] + dragY,
+            ];
+            translateTransform[0] = translateTransform_raw[0] / newScale;
+            translateTransform[1] = translateTransform_raw[1] / newScale;
+            updateTransform();
+            dragOffsetX += dragX;
+            dragOffsetY += dragY;
+            anchorX = evt.clientX;
+            anchorY = evt.clientY;
+          }
+        } else {
+          timeDownUp = null;
+        }
+      } else if (mode == "bbox" && dragStart) {
+        dragged = true;
+        updateGraphics();
+      } else if (mode == "link") {
+        updateGraphics();
+      }
+    });
+
+    function drawPolygonOutline(corners) {
+      for (var j = 0; j < corners.length; j++) {
+        ctx.fillRect(
+          corners[j][0] - dotSize / 2,
+          corners[j][1] - dotSize / 2,
+          dotSize,
+          dotSize
+        );
+      }
+      ctx.beginPath();
+      ctx.moveTo(corners[0][0], corners[0][1]);
+      for (var j = 1; j < corners.length; j++) {
+        ctx.lineTo(corners[j][0], corners[j][1]);
+        ctx.stroke();
+      }
+      ctx.stroke();
+      ctx.closePath();
     }
 
-    function getCorrectCoords(evt) {
-        mouseX = evt.clientX - parent.offsetLeft + parent.scrollLeft + window.pageXOffset;
-        mouseY = evt.clientY - parent.offsetTop + parent.scrollTop + window.pageYOffset;
-        correctX = (mouseX + scalingOffsetX - translateTransform_raw[0]) / newScale;
-        correctY = (mouseY + scalingOffsetY - translateTransform_raw[1]) / newScale;
-        correctX = Math.round(correctX);
-        correctY = Math.round(correctY);
+    function fillPolygon(corners) {
+      ctx.beginPath();
+      ctx.moveTo(corners[0][0], corners[0][1]);
+      for (var j = 1; j < corners.length; j++) {
+        ctx.lineTo(corners[j][0], corners[j][1]);
+        ctx.stroke();
+      }
+      ctx.lineTo(corners[0][0], corners[0][1]);
+      ctx.stroke();
+      ctx.closePath();
+      ctx.fill();
     }
 
-    function getDeleteIdx(){
-        var deleteIdx = -1;
-        var min_dist = 1000000;
-        var dist_array = new Array();
-        for (var i = 0; i < annotations.length; i++) {
-            var ann = annotations[i];
-            var corners = ann.data;
-            switch (ann.mode) {
-                case "dot":
-                    dist_array.push(getDist([correctX, correctY], corners));
-                    break;
-                case "link":
-                    dist_array.push(get_avg_dist(corners));
-                    break;
-                case "polygon":
-                    dist_array.push(get_avg_dist(corners));
-                    break;
-                case "bbox":
-                    dist_array.push(get_avg_dist(corners));
+    function toggleMode() {
+      modeNum += 1;
+      if (modeNum >= modes.length) {
+        modeNum = 0;
+      }
+      setDeleteMode(false);
+      mode = modes[modeNum];
+      modeButton.value = "Mode: " + capitalize(mode);
+      clearCurrentAnn();
+    }
+
+    function clearCurrentAnn() {
+      currentBbox.data = new Array();
+      currentLink.data = new Array();
+      currentPolygon.data = new Array();
+    }
+
+    function deleteAnnotation() {
+      if (delete_idx > -1) {
+        var ann_copy = deep_copy(annotations[delete_idx]);
+        trashcan.push(ann_copy);
+        annotations.splice(delete_idx, 1);
+        delete_idx = getDeleteIdx();
+        if (annotations.length == 0)
+          // no more to delete, go back to annotate mode
+          setDeleteMode(false);
+      }
+    }
+
+    function toggleDelete() {
+      setDeleteMode(!getDeleteMode());
+    }
+
+    function getDeleteMode() {
+      return delete_mode;
+    }
+
+    function setDeleteMode(deleteMode) {
+      delete_mode = deleteMode;
+      console.log(delete_mode);
+      if (delete_mode == false) {
+        // annotate mode
+        canvas.style.cursor = "crosshair";
+        $("#delete_button").removeClass("btn-primary");
+        $("#delete_button").addClass("btn-outline-secondary");
+
+        $("#annotate_button").removeClass("btn-outline-secondary");
+        $("#annotate_button").addClass("btn-primary");
+        updateGraphics();
+      } else {
+        // delete mode
+        delete_idx = getDeleteIdx();
+        canvas.style.cursor = "pointer";
+        $("#annotate_button").removeClass("btn-primary");
+        $("#annotate_button").addClass("btn-outline-secondary");
+
+        $("#delete_button").removeClass("btn-outline-secondary");
+        $("#delete_button").addClass("btn-primary");
+        updateGraphics();
+      }
+    }
+
+    function reset() {
+      clearAnnotations();
+      reposition();
+      firstPoint = true;
+      dragStart = false;
+      dragged = false;
+      setDeleteMode(false);
+    }
+
+    function reposition() {
+      child.style.transform = "";
+      scaleTransform = 1.0;
+      translateTransform = [0, 0];
+      translateTransform_raw = [0, 0];
+      newScale = 1.0;
+      oldScale = 1.0;
+      scaleRatio = 1.0;
+      scaleDiff = 0;
+      dragOffsetX = 0;
+      dragOffsetY = 0;
+      scalingOffsetX = 0;
+      scalingOffsetY = 0;
+    }
+
+    function updateAnnotation() {
+      switch (mode) {
+        case "dot": // dot mode
+          annotations.push({
+            class: getClass(),
+            mode: "dot",
+            data: [correctX, correctY],
+          });
+          break;
+        case "link": // link mode
+          currentLink.class = getClass();
+          currentLink.data.push([correctX, correctY]);
+          if (firstPoint) {
+            firstPoint = false;
+          } else {
+            annotations.push(Object.assign({}, currentLink));
+            currentLink.data = new Array();
+            firstPoint = true;
+          }
+          break;
+        case "polygon": // polygon mode
+          currentPolygon.class = getClass();
+          currentPolygon.data.push([correctX, correctY]);
+      }
+    }
+
+    function clearAnnotations() {
+      annotations = new Array();
+      trashcan = new Array();
+      currentLink = { class: [], mode: "link", data: [] };
+      currentPolygon = { class: [], mode: "polygon", data: [] };
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function getClass() {
+      return classSelection[classSelection.selectedIndex].innerHTML;
+    }
+
+    // Redraw all annotations
+    function updateGraphics() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (var i = 0; i < annotations.length; i++) {
+        var ann = annotations[i];
+        var corners = ann.data;
+        var r, g, b;
+        if (getDeleteMode() == true && delete_idx == i) {
+          r = g = b = 0.5;
+        } else {
+          [r, g, b] = getColor(ann);
+        }
+        switch (ann.mode) {
+          case "dot":
+            ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+            ctx.fillRect(
+              corners[0] - dotSize / 2,
+              corners[1] - dotSize / 2,
+              dotSize,
+              dotSize
+            );
+            break;
+          case "link":
+            // draw complete links
+            ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+            ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+            ctx.beginPath();
+            ctx.moveTo(corners[0][0], corners[0][1]);
+            ctx.lineTo(corners[1][0], corners[1][1]);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.fillRect(
+              corners[0][0] - dotSize / 2,
+              corners[0][1] - dotSize / 2,
+              dotSize,
+              dotSize
+            );
+            ctx.fillRect(
+              corners[1][0] - dotSize / 2,
+              corners[1][1] - dotSize / 2,
+              dotSize,
+              dotSize
+            );
+            break;
+          case "polygon":
+            // draw complete polygons
+            ctx.fillStyle =
+              "rgba(" + r + "," + g + "," + b + ", " + transparency_level + ")";
+            ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+            fillPolygon(corners);
+            break;
+          case "bbox":
+            ctx.fillStyle = "rgba(1, 1, 1, 0)";
+            ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+            var xmin = ann.data[0][0];
+            var ymin = ann.data[0][1];
+            var xmax = ann.data[1][0];
+            var ymax = ann.data[1][1];
+            var corners = [
+              [xmin, ymin],
+              [xmax, ymin],
+              [xmax, ymax],
+              [xmin, ymax],
+            ];
+            fillPolygon(corners);
+        }
+      }
+
+      // draw current link
+      if (currentLink.data.length != 0) {
+        var r, g, b;
+        [r, g, b] = getColor(currentLink);
+        ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+        ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+        var dot = currentLink.data;
+        ctx.fillRect(
+          dot[0][0] - dotSize / 2,
+          dot[0][1] - dotSize / 2,
+          dotSize,
+          dotSize
+        );
+        ctx.beginPath();
+        ctx.moveTo(dot[0][0], dot[0][1]);
+        ctx.lineTo(correctX, correctY);
+        ctx.closePath();
+        ctx.stroke();
+      }
+
+      // draw current polygon
+      if (currentPolygon.data.length != 0) {
+        var r, g, b;
+        [r, g, b] = getColor(currentPolygon);
+        ctx.fillStyle =
+          "rgba(" + r + "," + g + "," + b + ", " + transparency_level + ")";
+        ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+        var corners = currentPolygon.data;
+        drawPolygonOutline(corners);
+      }
+
+      // draw current bbox
+      if (currentBbox.data.length != 0) {
+        var r, g, b;
+        [r, g, b] = getColor(currentBbox);
+        ctx.fillStyle = "rgba(1, 1, 1, 0)";
+        ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ", 1.0)";
+        var xmin = currentBbox.data[0][0];
+        var ymin = currentBbox.data[0][1];
+        var xmax = correctX;
+        var ymax = correctY;
+        var corners = [
+          [xmin, ymin],
+          [xmax, ymin],
+          [xmax, ymax],
+          [xmin, ymax],
+        ];
+        fillPolygon(corners);
+      }
+    }
+
+    // depending on mode, either undo deletion or undo annotation
+    function undo() {
+      if (getDeleteMode() == true) {
+        if (trashcan.length > 0) {
+          annotations.push(trashcan.pop());
+        }
+      } else {
+        switch (mode) {
+          case "dot":
+            annotations.pop();
+            break;
+          case "link":
+            if (currentLink.data.length == 0) {
+              annotations.pop();
+            } else {
+              currentLink.data = new Array();
+              firstPoint = true;
+            }
+            break;
+          case "polygon":
+            if (currentPolygon.data.length == 0) {
+              annotations.pop();
+            } else {
+              currentPolygon.data.pop();
+            }
+            break;
+          case "bbox":
+            if (currentBbox.data.length == 0) {
+              annotations.pop();
+            } else {
+              currentBbox.data = new Array();
+              dragStart = false;
+              dragged = false;
             }
         }
-        var dist;
-        for (var i = 0; i < dist_array.length; i++){
-            dist = dist_array[i];
-            if (dist < min_dist) {
-                min_dist = dist;
-                deleteIdx = i;
-            }
+      }
+      updateGraphics();
+    }
+
+    window.addEventListener(
+      "keydown",
+      function (evt) {
+        // Press E for "Mode toggle"
+        if (evt.key == "e") {
+          toggleMode();
         }
-        return deleteIdx
-    }
 
-    function getDist(pair_a, pair_b) {
-        var distance = Math.sqrt(Math.pow((pair_a[0] - pair_b[0]), 2) + Math.pow((pair_a[1] - pair_b[1]), 2));
-        return distance;
-    }
-
-    function deep_copy(obj){
-        return jQuery.extend(true, {}, obj);
-    }
-
-    function capitalize(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    }
-
-    function mean(array){
-        var total = 0;
-        for (var j = 0; j < array.length; j++) {
-            total += array[j];
+        // Press ctrl + Z for "Undo"
+        if (evt.key == "z" && evt.ctrlKey) {
+          undo();
         }
-        var avg = total / array.length;
-        return avg;
-    }
 
-    function get_avg_dist(corners){
-        var avg_dist_array = new Array();
-        for (var j = 0; j < corners.length; j++) {
-            avg_dist_array.push(getDist([correctX, correctY], corners[j]));
+        // Press D for "Delete"
+        if (evt.key == "d") {
+          toggleDelete();
         }
-        return mean(avg_dist_array);
-    }
 
-    String.prototype.hashCode = function () {
-        var hash = 0;
-        if (this.length == 0) {
-            return hash;
+        // Press C for "Close Polygon"
+        if (evt.key == "c") {
+          if (currentPolygon.data.length > 2) {
+            currentPolygon.class = getClass();
+            annotations.push(Object.assign({}, currentPolygon));
+            currentPolygon.data = new Array();
+          }
+          // Update coordinates
+          if (annotations.length == 0) {
+            document.getElementById("coordinates").value = "";
+          } else {
+            document.getElementById("coordinates").value = JSON.stringify(
+              annotations
+            );
+          }
         }
-        for (var i = 0; i < this.length; i++) {
-            var char = this.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // Convert to 32bit integer
-        }
-        return hash;
-    }
+        updateGraphics();
+      },
+      true
+    );
+  };
 
-    function HSVtoRGB(h, s, v) {
-        // Borrowed from https://stackoverflow.com/a/17243070/4970438
-        var r, g, b, i, f, p, q, t;
-        if (arguments.length === 1) {
-            s = h.s, v = h.v, h = h.h;
-        }
-        i = Math.floor(h * 6);
-        f = h * 6 - i;
-        p = v * (1 - s);
-        q = v * (1 - f * s);
-        t = v * (1 - (1 - f) * s);
-        switch (i % 6) {
-            case 0: r = v, g = t, b = p; break;
-            case 1: r = q, g = v, b = p; break;
-            case 2: r = p, g = v, b = t; break;
-            case 3: r = p, g = q, b = v; break;
-            case 4: r = t, g = p, b = v; break;
-            case 5: r = v, g = p, b = q; break;
-        }
-        return {
-            r: Math.round(r * 255),
-            g: Math.round(g * 255),
-            b: Math.round(b * 255)
-        };
-    }
+  window.onload = function () {
+    start();
+  };
 
-    function getColor(ann){
-        var color = colors[ann.class];
-        var h = color[0];
-        var s = color[1];
-        var v = color[2];
-        var rgbColors = HSVtoRGB(h, s, v);
-        var r = rgbColors.r.toString();
-        var g = rgbColors.g.toString();
-        var b = rgbColors.b.toString();
-        return [r, g, b]
-    }
+  var handleScroll = function (evt) {
+    getCorrectCoords(evt);
+    delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
 
+    newScale += delta / 10;
+    newScale = Math.max(newScale, 1.0);
+    newScale = Math.min(newScale, 5.0);
+    scaleRatio = newScale / oldScale;
+    scaleDiff = newScale - oldScale;
+    oldScale = scaleTransform = newScale;
+
+    scalingOffsetX = ((newScale - 1) * parent.offsetWidth) / 2;
+    scalingOffsetY = ((newScale - 1) * parent.offsetHeight) / 2;
+
+    translateTransform_raw[0] -=
+      (correctX - parent.offsetWidth / 2) * scaleDiff;
+    translateTransform_raw[1] -=
+      (correctY - parent.offsetHeight / 2) * scaleDiff;
+
+    translateTransform[0] = translateTransform_raw[0] / newScale;
+    translateTransform[1] = translateTransform_raw[1] / newScale;
+    updateTransform();
+  };
+
+  function updateTransform() {
+    child.style.transform = "";
+    child.style.transform +=
+      "scale(" + scaleTransform + ", " + scaleTransform + ")";
+    child.style.transform +=
+      "translate(" +
+      translateTransform[0] +
+      "px, " +
+      translateTransform[1] +
+      "px)";
+  }
+
+  function getCorrectCoords(evt) {
+    mouseX =
+      evt.clientX - parent.offsetLeft + parent.scrollLeft + window.pageXOffset;
+    mouseY =
+      evt.clientY - parent.offsetTop + parent.scrollTop + window.pageYOffset;
+    correctX = (mouseX + scalingOffsetX - translateTransform_raw[0]) / newScale;
+    correctY = (mouseY + scalingOffsetY - translateTransform_raw[1]) / newScale;
+    correctX = Math.round(correctX);
+    correctY = Math.round(correctY);
+  }
+
+  function getDeleteIdx() {
+    var deleteIdx = -1;
+    var min_dist = 1000000;
+    var dist_array = new Array();
+    for (var i = 0; i < annotations.length; i++) {
+      var ann = annotations[i];
+      var corners = ann.data;
+      switch (ann.mode) {
+        case "dot":
+          dist_array.push(getDist([correctX, correctY], corners));
+          break;
+        case "link":
+          dist_array.push(get_avg_dist(corners));
+          break;
+        case "polygon":
+          dist_array.push(get_avg_dist(corners));
+          break;
+        case "bbox":
+          dist_array.push(get_avg_dist(corners));
+      }
+    }
+    var dist;
+    for (var i = 0; i < dist_array.length; i++) {
+      dist = dist_array[i];
+      if (dist < min_dist) {
+        min_dist = dist;
+        deleteIdx = i;
+      }
+    }
+    return deleteIdx;
+  }
+
+  function getDist(pair_a, pair_b) {
+    var distance = Math.sqrt(
+      Math.pow(pair_a[0] - pair_b[0], 2) + Math.pow(pair_a[1] - pair_b[1], 2)
+    );
+    return distance;
+  }
+
+  function deep_copy(obj) {
+    return jQuery.extend(true, {}, obj);
+  }
+
+  function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  function mean(array) {
+    var total = 0;
+    for (var j = 0; j < array.length; j++) {
+      total += array[j];
+    }
+    var avg = total / array.length;
+    return avg;
+  }
+
+  function get_avg_dist(corners) {
+    var avg_dist_array = new Array();
+    for (var j = 0; j < corners.length; j++) {
+      avg_dist_array.push(getDist([correctX, correctY], corners[j]));
+    }
+    return mean(avg_dist_array);
+  }
+
+  String.prototype.hashCode = function () {
+    var hash = 0;
+    if (this.length == 0) {
+      return hash;
+    }
+    for (var i = 0; i < this.length; i++) {
+      var char = this.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+  };
+
+  function HSVtoRGB(h, s, v) {
+    // Borrowed from https://stackoverflow.com/a/17243070/4970438
+    var r, g, b, i, f, p, q, t;
+    if (arguments.length === 1) {
+      (s = h.s), (v = h.v), (h = h.h);
+    }
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+      case 0:
+        (r = v), (g = t), (b = p);
+        break;
+      case 1:
+        (r = q), (g = v), (b = p);
+        break;
+      case 2:
+        (r = p), (g = v), (b = t);
+        break;
+      case 3:
+        (r = p), (g = q), (b = v);
+        break;
+      case 4:
+        (r = t), (g = p), (b = v);
+        break;
+      case 5:
+        (r = v), (g = p), (b = q);
+        break;
+    }
+    return {
+      r: Math.round(r * 255),
+      g: Math.round(g * 255),
+      b: Math.round(b * 255),
+    };
+  }
+
+  function getColor(ann) {
+    var color = colors[ann.class];
+    var h = color[0];
+    var s = color[1];
+    var v = color[2];
+    var rgbColors = HSVtoRGB(h, s, v);
+    var r = rgbColors.r.toString();
+    var g = rgbColors.g.toString();
+    var b = rgbColors.b.toString();
+    return [r, g, b];
+  }
 </script>
