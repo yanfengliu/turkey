@@ -84,7 +84,7 @@
   }
 </style>
 
-<div data-testid="text" id="text" style="display: inline-block; vertical-align: top;">
+<div data-testid="text" id="text" style="display: inline-block; vertical-align: top">
   <button data-testid="title" id="title" type="button" class="btn btn-outline-primary btn-lg">
     Click for Instructions
   </button>
@@ -566,29 +566,30 @@
       return classSelection[classSelection.selectedIndex].innerHTML;
     }
 
-    function getColor(annotation) {
-      if (getDeleteMode() == true && delete_idx == i) {
+    function getColor(annotation, options) {
+      console.log(getDeleteMode(), options.idx, delete_idx);
+      if (getDeleteMode() === true && 'idx' in options && delete_idx === options.idx) {
         return [0.5, 0.5, 0.5];
       } else {
-        return annotation2Color(annotation);
+        return className2Color(annotation.class);
       }
     }
 
-    function drawDot(annotation) {
-      const [r, g, b] = getColor(annotation);
+    function drawDot(annotation, options) {
+      const [r, g, b] = getColor(annotation, options);
       const corners = annotation.data;
       ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ', 1.0)';
       ctx.fillRect(corners[0] - dotSize / 2, corners[1] - dotSize / 2, dotSize, dotSize);
     }
 
-    function drawLink(annotation, current = false) {
-      const [r, g, b] = getColor(annotation);
+    function drawLink(annotation, options) {
+      const [r, g, b] = getColor(annotation, options);
       const corners = annotation.data;
       ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ', 1.0)';
       ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ', 1.0)';
       ctx.beginPath();
       ctx.moveTo(corners[0][0], corners[0][1]);
-      if (current) {
+      if (options.current) {
         lastLocation = [correctX, correctY];
       } else {
         lastLocation = corners[1];
@@ -600,26 +601,26 @@
       ctx.fillRect(lastLocation[0] - dotSize / 2, lastLocation[1] - dotSize / 2, dotSize, dotSize);
     }
 
-    function drawPolygon(annotation, current = false) {
-      const [r, g, b] = getColor(annotation);
+    function drawPolygon(annotation, options) {
+      const [r, g, b] = getColor(annotation, options);
       const corners = annotation.data;
       ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ', ' + transparency_level + ')';
       ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ', 1.0)';
-      if (current) {
+      if (options.current) {
         drawPolygonOutline(corners);
       } else {
         fillPolygon(corners);
       }
     }
 
-    function drawBbox(annotation, current = false) {
-      const [r, g, b] = getColor(annotation);
+    function drawBbox(annotation, options) {
+      const [r, g, b] = getColor(annotation, options);
       ctx.fillStyle = 'rgba(1, 1, 1, 0)';
       ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ', 1.0)';
       const xmin = annotation.data[0][0];
       const ymin = annotation.data[0][1];
       var xmax, ymax;
-      if (current) {
+      if (options.current) {
         xmax = correctX;
         ymax = correctY;
       } else {
@@ -637,32 +638,32 @@
 
     function updateGraphics() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      annotations.forEach((ann) => {
+      annotations.forEach((ann, idx) => {
         switch (ann.mode) {
           case 'dot':
-            drawDot(ann);
+            drawDot(ann, { current: false, idx });
             break;
           case 'link':
-            drawLink(ann);
+            drawLink(ann, { current: false, idx });
             break;
           case 'polygon':
-            drawPolygon(ann);
+            drawPolygon(ann, { current: false, idx });
             break;
           case 'bbox':
-            drawBbox(ann);
+            drawBbox(ann, { current: false, idx });
         }
       });
 
       if (currentLink.data.length != 0) {
-        drawLink(currentLink, true);
+        drawLink(currentLink, { current: true });
       }
 
       if (currentPolygon.data.length != 0) {
-        drawPolygon(currentPolygon, true);
+        drawPolygon(currentPolygon, { current: true });
       }
 
       if (currentBbox.data.length != 0) {
-        drawBbox(currentBbox, true);
+        drawBbox(currentBbox, { current: true });
       }
     }
 
@@ -900,8 +901,8 @@
     };
   }
 
-  function annotation2Color(annotation) {
-    var color = colors[annotation.class];
+  function className2Color(className) {
+    var color = colors[className];
     var h = color[0];
     var s = color[1];
     var v = color[2];
