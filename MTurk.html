@@ -567,7 +567,6 @@
     }
 
     function getColor(annotation, options) {
-      console.log(getDeleteMode(), options.idx, delete_idx);
       if (getDeleteMode() === true && 'idx' in options && delete_idx === options.idx) {
         return [0.5, 0.5, 0.5];
       } else {
