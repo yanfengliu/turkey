@@ -203,35 +203,35 @@
 </div>
 
 <script id="turkey" type="text/javascript">
-  var translateX, translateY, correctX, correctY;
-  var anchorX, anchorY, dragX, dragY, mouseX, mouseY;
-  var dragged, dragStart, delta, scaleRatio, scaleDiff;
-  var child, parent, canvas, ctx, img;
-  var annotations, modes, classSelection;
-  var transparency_level = 0.5;
-  var dragOffsetX = 0;
-  var dragOffsetY = 0;
-  var scalingOffsetX = 0;
-  var scalingOffsetY = 0;
-  var oldScale = 1.0;
-  var newScale = 1.0;
-  var firstPoint = true;
-  var mode = '';
-  var modeNum = 0;
-  var dotSize = 4;
-  var scaleTransform = 1;
-  var translateTransform = [0, 0];
-  var translateTransform_raw = [0, 0];
-  var delete_mode = false;
-  var delete_idx = -1;
-  var trashcan = new Array();
-  var colors = {};
-  var timeDownUp = null;
-  var rightClick = false;
+  let translateX, translateY, correctX, correctY;
+  let anchorX, anchorY, dragX, dragY, mouseX, mouseY;
+  let dragged, dragStart, delta, scaleRatio, scaleDiff;
+  let child, parent, canvas, ctx, img;
+  let annotations, modes, classSelection;
+  let transparency_level = 0.5;
+  let dragOffsetX = 0;
+  let dragOffsetY = 0;
+  let scalingOffsetX = 0;
+  let scalingOffsetY = 0;
+  let oldScale = 1.0;
+  let newScale = 1.0;
+  let firstPoint = true;
+  let mode = '';
+  let modeNum = 0;
+  let dotSize = 4;
+  let scaleTransform = 1;
+  let translateTransform = [0, 0];
+  let translateTransform_raw = [0, 0];
+  let delete_mode = false;
+  let delete_idx = -1;
+  let trashcan = new Array();
+  let colors = {};
+  let timeDownUp = null;
+  let rightClick = false;
 
-  var currentLink = { class: [], mode: 'link', data: [] };
-  var currentPolygon = { class: [], mode: 'polygon', data: [] };
-  var currentBbox = { class: [], mode: 'bbox', data: [] };
+  let currentLink = { class: [], mode: 'link', data: [] };
+  let currentPolygon = { class: [], mode: 'polygon', data: [] };
+  let currentBbox = { class: [], mode: 'bbox', data: [] };
 
   var start = function () {
     parent = document.getElementById('parent');
@@ -269,7 +269,7 @@
       Array.prototype.splice.call(annotations, idx, numElements);
     };
 
-    var mode_data = '${annotation_mode}';
+    let mode_data = '${annotation_mode}';
     if (mode_data == '$' + '{annotation_mode}') {
       // running in local demo mode
       mode_data = 'dot-link-polygon-bbox';
@@ -280,18 +280,22 @@
 
     // generate select list options
     classSelection = document.getElementById('label_class');
-    var classes_data = '${classes}';
-    if (classes_data == '$' + '{classes}') {
-      // running in local demo mode
-      classes_data = 'tree-person-house';
+    let classesData = '${classes}';
+    let classesTestData = 'class0';
+    for (let i = 1; i < 20; i++) {
+      classesTestData += `-class${i}`;
     }
-    classes = classes_data.split('-');
+    if (classesData == '$' + '{classes}') {
+      // running in local demo mode
+      classesData = classesTestData;
+    }
+    const classes = classesData.split('-');
 
     // populate list items and generate unique colors based on string hash
     classes.forEach((theClass) => {
-      var option = document.createElement('option');
-      var hue = Math.abs(theClass.hashCode() % 360) / 360;
-      var color = [hue, 1.0, 1.0];
+      let option = document.createElement('option');
+      let hue = Math.abs(theClass.hashCode() % 360) / 360;
+      let color = [hue, 1.0, 1.0];
       option.innerHTML = theClass;
       classSelection.appendChild(option);
       colors[theClass] = color;
@@ -302,7 +306,7 @@
     updateGraphics();
 
     //initialize slider
-    var slider = document.getElementById('transparency_slider');
+    let slider = document.getElementById('transparency_slider');
     slider.oninput = function () {
       transparency_level = this.value / 100.0;
       updateGraphics();
@@ -387,7 +391,7 @@
         delete_idx = getDeleteIdx();
         updateGraphics();
       } else if (rightClick) {
-        var timeMove = new Date().getTime();
+        let timeMove = new Date().getTime();
         if (timeMove > timeDownUp) {
           if (dragStart) {
             dragged = true;
@@ -417,12 +421,12 @@
     });
 
     function drawPolygonOutline(corners) {
-      for (var j = 0; j < corners.length; j++) {
+      for (let j = 0; j < corners.length; j++) {
         ctx.fillRect(corners[j][0] - dotSize / 2, corners[j][1] - dotSize / 2, dotSize, dotSize);
       }
       ctx.beginPath();
       ctx.moveTo(corners[0][0], corners[0][1]);
-      for (var j = 1; j < corners.length; j++) {
+      for (let j = 1; j < corners.length; j++) {
         ctx.lineTo(corners[j][0], corners[j][1]);
         ctx.stroke();
       }
@@ -433,7 +437,7 @@
     function fillPolygon(corners) {
       ctx.beginPath();
       ctx.moveTo(corners[0][0], corners[0][1]);
-      for (var j = 1; j < corners.length; j++) {
+      for (let j = 1; j < corners.length; j++) {
         ctx.lineTo(corners[j][0], corners[j][1]);
         ctx.stroke();
       }
@@ -462,7 +466,7 @@
 
     function deleteAnnotation() {
       if (delete_idx > -1) {
-        var ann_copy = deep_copy(annotations[delete_idx]);
+        let ann_copy = deep_copy(annotations[delete_idx]);
         trashcan.push(ann_copy);
         annotations.splice(delete_idx, 1);
         delete_idx = getDeleteIdx();
@@ -618,7 +622,7 @@
       ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ', 1.0)';
       const xmin = annotation.data[0][0];
       const ymin = annotation.data[0][1];
-      var xmax, ymax;
+      let xmax, ymax;
       if (options.current) {
         xmax = correctX;
         ymax = correctY;
@@ -747,7 +751,7 @@
     start();
   };
 
-  var handleScroll = function (evt) {
+  let handleScroll = function (evt) {
     getCorrectCoords(evt);
     delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0;
 
@@ -786,12 +790,12 @@
   }
 
   function getDeleteIdx() {
-    var deleteIdx = -1;
-    var min_dist = 1000000;
-    var dist_array = new Array();
-    for (var i = 0; i < annotations.length; i++) {
-      var ann = annotations[i];
-      var corners = ann.data;
+    let deleteIdx = -1;
+    let min_dist = 1000000;
+    let dist_array = new Array();
+    for (let i = 0; i < annotations.length; i++) {
+      let ann = annotations[i];
+      let corners = ann.data;
       switch (ann.mode) {
         case 'dot':
           dist_array.push(getDist([correctX, correctY], corners));
@@ -806,8 +810,8 @@
           dist_array.push(get_avg_dist(corners));
       }
     }
-    var dist;
-    for (var i = 0; i < dist_array.length; i++) {
+    let dist;
+    for (let i = 0; i < dist_array.length; i++) {
       dist = dist_array[i];
       if (dist < min_dist) {
         min_dist = dist;
@@ -818,7 +822,7 @@
   }
 
   function getDist(pair_a, pair_b) {
-    var distance = Math.sqrt(
+    let distance = Math.sqrt(
       Math.pow(pair_a[0] - pair_b[0], 2) + Math.pow(pair_a[1] - pair_b[1], 2)
     );
     return distance;
@@ -833,30 +837,26 @@
   }
 
   function mean(array) {
-    var total = 0;
-    for (var j = 0; j < array.length; j++) {
+    let total = 0;
+    for (let j = 0; j < array.length; j++) {
       total += array[j];
     }
-    var avg = total / array.length;
+    let avg = total / array.length;
     return avg;
   }
 
   function get_avg_dist(corners) {
-    var avg_dist_array = new Array();
-    for (var j = 0; j < corners.length; j++) {
+    let avg_dist_array = new Array();
+    for (let j = 0; j < corners.length; j++) {
       avg_dist_array.push(getDist([correctX, correctY], corners[j]));
     }
     return mean(avg_dist_array);
   }
 
   String.prototype.hashCode = function () {
-    var hash = 0;
-    if (this.length == 0) {
-      return hash;
-    }
-    for (var i = 0; i < this.length; i++) {
-      var char = this.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
+    let hash = 0;
+    for (let i = 0; i < this.length; i++) {
+      hash += Math.pow(this.charCodeAt(i) * 31, this.length - i);
       hash = hash & hash; // Convert to 32bit integer
     }
     return hash;
@@ -864,7 +864,7 @@
 
   function HSVtoRGB(h, s, v) {
     // Borrowed from https://stackoverflow.com/a/17243070/4970438
-    var r, g, b, i, f, p, q, t;
+    let r, g, b, i, f, p, q, t;
     if (arguments.length === 1) {
       (s = h.s), (v = h.v), (h = h.h);
     }
@@ -901,14 +901,14 @@
   }
 
   function className2Color(className) {
-    var color = colors[className];
-    var h = color[0];
-    var s = color[1];
-    var v = color[2];
-    var rgbColors = HSVtoRGB(h, s, v);
-    var r = rgbColors.r.toString();
-    var g = rgbColors.g.toString();
-    var b = rgbColors.b.toString();
+    let color = colors[className];
+    let h = color[0];
+    let s = color[1];
+    let v = color[2];
+    let rgbColors = HSVtoRGB(h, s, v);
+    let r = rgbColors.r.toString();
+    let g = rgbColors.g.toString();
+    let b = rgbColors.b.toString();
     return [r, g, b];
   }
 </script>
