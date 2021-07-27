@@ -1,8 +1,9 @@
-name: Turkey end-to-end tests chrome headless
+name: end-to-end tests docker chrome headless
 on: [push]
 jobs:
   cypress-run:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    container: cypress/included:8.0.0
     steps:
       - uses: actions/checkout@v2
       - uses: cypress-io/github-action@v2
