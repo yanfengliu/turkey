@@ -5,7 +5,15 @@
   "main": "index.js",
   "scripts": {
     "start": "serve -p 5000",
-    "test": "cypress run --browser chrome",
+    "buildDocker": "docker build -t cypress-test:v1 .",
+    "testDocker": "docker run -v ${PWD}:/e2e -w /e2e cypress-test:v1",
+    "test": "cypress run --browser=chrome",
+    "cy:run:chrome": "cypress run --browser=chrome",
+    "cy:run:firefox": "cypress run --browser=firefox",
+    "cy:run:edge": "cypress run --browser=edge",
+    "test:chrome": "start-server-and-test start http://localhost:5000 cy:run:chrome",
+    "test:firefox": "start-server-and-test start http://localhost:5000 cy:run:firefox",
+    "test:edge": "start-server-and-test start http://localhost:5000 cy:run:edge",
     "prettier:write": "prettier --write ./cypress",
     "prettier:check": "prettier --check ./cypress",
     "prepare": "husky install"
@@ -26,6 +34,7 @@
     "cypress-image-snapshot": "^4.0.1",
     "prettier": "^2.3.2",
     "serve": "^12.0.0",
+    "start-server-and-test": "^1.13.1",
     "typescript": "^4.3.5"
   },
   "devDependencies": {
