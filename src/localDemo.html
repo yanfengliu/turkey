@@ -82,9 +82,8 @@
           .getElementById("submitButton")
           .addEventListener("click", function (e) {
             document.getElementById("outputLabel").style.visibility = "visible";
-            document.getElementById("output").innerHTML = JSON.stringify(
-              annotations
-            );
+            document.getElementById("output").innerHTML =
+              JSON.stringify(annotations);
           });
 
         document
@@ -96,7 +95,7 @@
       };
 
       // load the current version directly from GitHub
-      // req.open("GET", "https://raw.githubusercontent.com/yanfengliu/turkey/master/MTurk.html");
+      // req.open("GET", "https://raw.githubusercontent.com/yanfengliu/turkey/master/src/MTurk.html");
 
       /* Use the following request instead if you want to load the local version.
        * Note that you will need to disable cross-site scripting protection
