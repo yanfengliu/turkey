@@ -1,10 +1,15 @@
 {
   "name": "turkey",
   "version": "1.0.0",
-  "description": "![demo_pic](https://i.imgur.com/jXAmiGw.jpg)\r ![demo_pic](https://i.imgur.com/EngUbGJ.jpg)",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "cypress run"
+    "start": "serve -p 5000",
+    "cy:run": "cypress run",
+    "test": "start-server-and-test start http://localhost:5000 cy:run",
+    "prettier:write": "prettier --write ./cypress",
+    "prettier:check": "prettier --check ./cypress",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -17,6 +22,16 @@
   },
   "homepage": "https://github.com/yanfengliu/turkey#readme",
   "dependencies": {
-    "cypress": "^8.0.0"
+    "@types/cypress-image-snapshot": "^3.1.6",
+    "cypress": "^8.0.0",
+    "cypress-image-snapshot": "^4.0.1",
+    "prettier": "^2.3.2",
+    "serve": "^12.0.0",
+    "typescript": "^4.3.5"
+  },
+  "devDependencies": {
+    "husky": "^7.0.0",
+    "pretty-quick": "^3.1.1",
+    "start-server-and-test": "^1.13.1"
   }
 }
