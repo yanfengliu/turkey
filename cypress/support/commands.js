@@ -30,6 +30,7 @@ addMatchImageSnapshotCommand({
   failureThresholdType: "percent", // percent of image or number of pixels
   customDiffConfig: { threshold: 0.0 }, // threshold for each pixel
   capture: "viewport", // capture viewport in screenshot
+  customSnapshotsDir: "cypress/screenshots",
 });
 
 Cypress.Commands.add("getById", (testid) => {
