@@ -4,6 +4,7 @@
 # **turkey**: an Amazon Mechanical Turk turn-key segment tool.
 
 [![Cypress.io](https://img.shields.io/badge/tested%20with-Cypress-04C38E.svg)](https://www.cypress.io/)
+![test workflow](https://github.com/yanfengliu/turkey/actions/workflows/github-actions.yml/badge.svg)
 
 Authors:
 
