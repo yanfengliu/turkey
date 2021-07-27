@@ -1,0 +1,22 @@
+{
+  "name": "turkey",
+  "version": "1.0.0",
+  "description": "![demo_pic](https://i.imgur.com/jXAmiGw.jpg)\r ![demo_pic](https://i.imgur.com/EngUbGJ.jpg)",
+  "main": "index.js",
+  "scripts": {
+    "test": "cypress run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yanfengliu/turkey.git"
+  },
+  "author": "Yanfeng Liu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yanfengliu/turkey/issues"
+  },
+  "homepage": "https://github.com/yanfengliu/turkey#readme",
+  "dependencies": {
+    "cypress": "^8.0.0"
+  }
+}
