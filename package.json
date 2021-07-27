@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "serve -p 5000",
-    "test": "cypress run",
+    "test": "cypress run --browser chrome",
     "prettier:write": "prettier --write ./cypress",
     "prettier:check": "prettier --check ./cypress",
     "prepare": "husky install"
