@@ -3,7 +3,7 @@ on: [push]
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
-    container: cypress/included:8.0.0
+    container: cypress/included:8.7.0
     steps:
       - uses: actions/checkout@v2
       - uses: cypress-io/github-action@v2
