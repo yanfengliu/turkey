@@ -52,12 +52,6 @@ Alternatively, we can also treat a batch of images with the same settings by cop
 
 You can test the code before deploying it on MTurk by opening `src/localDemo.html` in your browser. This file is a lightweight wrapper that will load `MTurk.html` off GitHub, passing a sample image to it in the process. If you don't see anything here, make sure to start Chrome with the `--allow-file-access-from-files` flag (or the equivalent configuration for the browser of your choice). This will allow this wrapper page to load MTurk.html.
 
-Alternatively, if you have NPM installed, you can run the following commands from the terminal and open `src/localDemo.html` from the localhost page:
-
-```
-npm install -g serve && serve
-```
-
 ## Unpacking data from .csv file
 
 After the users annotate the images, Amazon Mechanical Turk provides a `.csv` file ready for downloading. `example/reviewAnnotations.m` contains a sample MATLAB UI that displays the downloaded annotations for review. The approval results will be written into a csv file to be uploaded to MTurk for batch processing. The MATLAB UI is shown below:
