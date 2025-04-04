@@ -1,6 +1,0 @@
-{
-  "baseUrl": "http://localhost:5000/src",
-  "viewportWidth": 1200,
-  "viewportHeight": 1000,
-  "trashAssetsBeforeRuns": false
-}
