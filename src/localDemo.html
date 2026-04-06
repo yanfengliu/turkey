@@ -74,7 +74,9 @@
         document.getElementById("container").innerHTML = e.target.response;
         document.getElementById("pic").src = "https://i.imgur.com/T9cqo2v.jpg";
         document.getElementById("title").innerText = "Click for Instructions";
-        eval(document.getElementById("turkey").innerHTML);
+        let scriptEl = document.createElement("script");
+        scriptEl.textContent = document.getElementById("turkey").innerHTML;
+        document.body.appendChild(scriptEl);
         document.getElementById("pic").onload = function () {
           start();
         };

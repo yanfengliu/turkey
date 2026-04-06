@@ -251,7 +251,7 @@
   let translateTransform_raw = [0, 0];
   let delete_mode = false;
   let delete_idx = -1;
-  let trashcan = new Array();
+  let trashcan = [];
   let colors = {};
   let timeDownUp = null;
   let rightClick = false;
@@ -260,7 +260,7 @@
   let currentPolygon = { class: [], mode: "polygon", data: [] };
   let currentBbox = { class: [], mode: "bbox", data: [] };
 
-  var start = function () {
+  let start = function () {
     parent = document.getElementById("parent");
     child = document.getElementById("child");
     canvas = document.getElementById("myCanvas");
@@ -321,7 +321,7 @@
     // populate list items and generate unique colors based on string hash
     classes.forEach((theClass) => {
       let option = document.createElement("option");
-      let hue = Math.abs(theClass.hashCode() % 360) / 360;
+      let hue = Math.abs(hashCode(theClass) % 360) / 360;
       let color = [hue, 1.0, 1.0];
       option.innerHTML = theClass;
       classSelection.appendChild(option);
@@ -375,7 +375,7 @@
       dragStart = true;
       if (mode == "bbox" && !rightClick && !getDeleteMode()) {
         currentBbox.class = getClass();
-        currentBbox.data = new Array();
+        currentBbox.data = [];
         currentBbox.data.push([correctX, correctY]);
       }
     });
@@ -389,17 +389,17 @@
           if (currentBbox.data.length == 2) {
             annotations.push(Object.assign({}, currentBbox));
           }
-          currentBbox.data = new Array();
+          currentBbox.data = [];
         }
       } else {
         if (!rightClick) {
-          if (getDeleteMode() == true) {
+          if (getDeleteMode()) {
             deleteAnnotation();
           } else {
             updateAnnotation();
           }
         } else {
-          currentBbox.data = new Array();
+          currentBbox.data = [];
         }
       }
 
@@ -417,7 +417,7 @@
 
     canvas.addEventListener("mousemove", function (evt) {
       getCorrectCoords(evt);
-      if (getDeleteMode() == true) {
+      if (getDeleteMode()) {
         delete_idx = getDeleteIdx();
         updateGraphics();
       } else if (rightClick) {
@@ -494,9 +494,9 @@
     }
 
     function clearCurrentAnn() {
-      currentBbox.data = new Array();
-      currentLink.data = new Array();
-      currentPolygon.data = new Array();
+      currentBbox.data = [];
+      currentLink.data = [];
+      currentPolygon.data = [];
     }
 
     function deleteAnnotation() {
@@ -521,7 +521,7 @@
 
     function setDeleteMode(deleteMode) {
       delete_mode = deleteMode;
-      if (delete_mode == false) {
+      if (!delete_mode) {
         // annotate mode
         canvas.style.cursor = "crosshair";
         $("#delete_button").removeClass("btn-primary");
@@ -583,7 +583,7 @@
             firstPoint = false;
           } else {
             annotations.push(Object.assign({}, currentLink));
-            currentLink.data = new Array();
+            currentLink.data = [];
             firstPoint = true;
           }
           break;
@@ -594,8 +594,8 @@
     }
 
     function clearAnnotations() {
-      annotations = new Array();
-      trashcan = new Array();
+      annotations = [];
+      trashcan = [];
       currentLink = { class: [], mode: "link", data: [] };
       currentPolygon = { class: [], mode: "polygon", data: [] };
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -607,7 +607,7 @@
 
     function getColor(annotation, options) {
       if (
-        getDeleteMode() === true &&
+        getDeleteMode() &&
         "idx" in options &&
         delete_idx === options.idx
       ) {
@@ -727,7 +727,7 @@
 
     // depending on mode, either undo deletion or undo annotation
     function undo() {
-      if (getDeleteMode() == true) {
+      if (getDeleteMode()) {
         if (trashcan.length > 0) {
           annotations.push(trashcan.pop());
         }
@@ -740,7 +740,7 @@
             if (currentLink.data.length == 0) {
               annotations.pop();
             } else {
-              currentLink.data = new Array();
+              currentLink.data = [];
               firstPoint = true;
             }
             break;
@@ -755,7 +755,7 @@
             if (currentBbox.data.length == 0) {
               annotations.pop();
             } else {
-              currentBbox.data = new Array();
+              currentBbox.data = [];
               dragStart = false;
               dragged = false;
             }
@@ -787,7 +787,7 @@
           if (currentPolygon.data.length > 2) {
             currentPolygon.class = getClass();
             annotations.push(Object.assign({}, currentPolygon));
-            currentPolygon.data = new Array();
+            currentPolygon.data = [];
           }
           // Update coordinates
           if (annotations.length == 0) {
@@ -857,7 +857,7 @@
   function getDeleteIdx() {
     let deleteIdx = -1;
     let min_dist = 1000000;
-    let dist_array = new Array();
+    let dist_array = [];
     for (let i = 0; i < annotations.length; i++) {
       let ann = annotations[i];
       let corners = ann.data;
@@ -911,21 +911,21 @@
   }
 
   function get_avg_dist(corners) {
-    let avg_dist_array = new Array();
+    let avg_dist_array = [];
     for (let j = 0; j < corners.length; j++) {
       avg_dist_array.push(getDist([correctX, correctY], corners[j]));
     }
     return mean(avg_dist_array);
   }
 
-  String.prototype.hashCode = function () {
+  function hashCode(str) {
     let hash = 0;
-    for (let i = 0; i < this.length; i++) {
-      hash += Math.pow(this.charCodeAt(i) * 31, this.length - i);
+    for (let i = 0; i < str.length; i++) {
+      hash += Math.pow(str.charCodeAt(i) * 31, str.length - i);
       hash = hash & hash; // Convert to 32bit integer
     }
     return hash;
-  };
+  }
 
   function HSVtoRGB(h, s, v) {
     // Borrowed from https://stackoverflow.com/a/17243070/4970438

@@ -1,0 +1,55 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Read",
+      "Edit",
+      "Write",
+      "Bash(cat *)",
+      "Bash(cd *)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(mkdir *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(sort *)",
+      "Bash(grep *)",
+      "Bash(pwd)",
+      "Bash(which *)",
+      "Bash(npm test:*)",
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm link:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npx vitest:*)",
+      "Bash(git*)",
+      "Bash(npx:*)"
+    ],
+    "deny": [
+      "Read(**/.env*)",
+      "Read(**/.npmrc)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/secrets.json)",
+      "Read(**/.ssh/**)",
+      "Read(**/.aws/credentials)",
+      "Read(**/.config/gcloud/**)",
+      "Edit(**/.env*)",
+      "Edit(**/.npmrc)",
+      "Edit(**/node_modules/**)",
+      "Edit(**/dist/**)",
+      "Edit(**/build/**)",
+      "Write(.env*)",
+      "Write(*.pem)",
+      "Write(*.key)",
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(chmod 777 *)"
+    ],
+    "ask": [
+    ],
+    "defaultMode": "acceptEdits"
+  }
+}
