@@ -10,6 +10,7 @@ An Amazon Mechanical Turk turn-key image-annotation tool in plain JavaScript (wi
 - Work headlessly by default; go non-headless only when nothing else can complete or verify the task, and say why.
 - These rules are strong defaults, not law: when one would make the work worse, deviate and say why.
 - Scale the approach to the task: trivial changes directly; substantial work as explore → plan → implement → verify, with subagents when work is genuinely parallel.
+- When two attempts at the same problem have failed, stop iterating alone: build the fixed benchmark or reproduction that settles the question, fan out independent subagents on deliberately different approaches against it, then switch role to evaluator — score their output yourself rather than trusting their reports, and take the best. A third pass at the approach that already failed twice is the expensive mistake. (Established 2026-07-31.)
 - Delivery boundary: each minimal coherent verified unit is reviewed, staged (scoped files only), and committed promptly — never commit failing or partial work as a checkpoint. Commit to `main`; push at the end of every task.
 - Concurrent sessions share one worktree and one index: commit by explicit pathspec (`git commit -- <files>`), never `git commit -a`, `git add -A`, or `git add .` — a sweeping commit captures whatever another session has staged. (Evidence: voxel c024b33, 2026-07-17.)
 - The repo's gates must pass before every commit that touches code; doc-only changes need a self-reviewed diff.
